@@ -415,7 +415,7 @@ class playGame extends Phaser.Scene {
       var played = []
       for (var j = 0; j < gameOptions.cols; j++) {
         var tile = {}
-        var block = this.add.image((gameOptions.offsetX + this.blockSize / 2) + j * this.blockSize, gameOptions.offsetY + i * this.blockSize, 'letters', 26).setInteractive({ dropZone: true })
+        var block = this.add.image((gameOptions.offsetX + this.blockSize / 2) + j * this.blockSize, gameOptions.offsetY + i * this.blockSize, 'letters', 27).setInteractive({ dropZone: true })
         block.displayWidth = this.blockSize;
         block.displayHeight = this.blockSize;
         tile.image = block;
