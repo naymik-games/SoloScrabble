@@ -10,14 +10,14 @@ var g_letters = [["a", 1, 10], ["b", 4, 2], ["c", 4, 2], ["d", 2, 5], ["e", 1, 1
 ["z", 10, 1], ["*", 0, 2]];
 var letterMaster = [
 
-  ]
+]
 var g_vowels = { "a": 1, "e": 1, "i": 1, "o": 1, "u": 1 };
 
 var g_letrange = "[a-z]";
 const HORIZONTAL = 0;
 const VERTICAL = 1;
 
-window.onload = function() {
+window.onload = function () {
   let gameConfig = {
     type: Phaser.AUTO,
     scale: {
@@ -58,8 +58,15 @@ class playGame extends Phaser.Scene {
     //this.colText = this.add.bitmapText(85, 1550, 'gothic', '0', 80).setOrigin(.5).setTint(0xcbf7ff).setAlpha(1);
     // this.rowText = this.add.bitmapText(185, 1550, 'gothic', '0', 80).setOrigin(.5).setTint(0xcbf7ff).setAlpha(1);
     this.scoreText = this.add.bitmapText(gameOptions.offsetX, gameOptions.offsetY - 100, 'gothic', '0', 80).setOrigin(0, 1).setTint(0xffffff).setAlpha(1);
+    this.xText = this.add.bitmapText(gameOptions.offsetX + 195, gameOptions.offsetY - 100, 'gothic', 'x', 80).setOrigin(0, 1).setTint(0xcf5555).setAlpha(1);
+    this.bonusText = this.add.bitmapText(gameOptions.offsetX + 245, gameOptions.offsetY - 100, 'gothic', '0', 80).setOrigin(0, 1).setTint(0xcffffff).setAlpha(1);
+    this.totalScoreText = this.add.bitmapText(game.config.width - gameOptions.offsetX, gameOptions.offsetY - 100, 'gothic', '0', 80).setOrigin(1).setTint(0xffffff).setAlpha(1);
+
     this.score = 0
-    this.starterWords = ['first', 'second', 'twist', 'quake']
+    this.totalScore = 0
+    var starterWordsString = 'first twist quake frodo luke solo house zebras board tile mouse catch witch famine news school simple water hunter'
+    this.starterWords = []
+    this.starterWords = starterWordsString.split(" ")
     this.boardNumber = 0
 
     this.blockSize = (game.config.width - gameOptions.offsetX * 2) / gameOptions.cols
@@ -85,7 +92,8 @@ class playGame extends Phaser.Scene {
 
     this.createBoard()
     this.makeBag()
-    this.firstWord(this.starterWords[this.boardNumber])
+    var rand = Phaser.Math.Between(0, this.starterWords.length - 1)
+    this.firstWord(this.starterWords[rand])
 
     var timer = this.time.addEvent({
       delay: 1000, // ms
@@ -105,14 +113,14 @@ class playGame extends Phaser.Scene {
 
 
 
-    this.input.on('drag', function(pointer, gameObject, dragX, dragY) {
+    this.input.on('drag', function (pointer, gameObject, dragX, dragY) {
 
       gameObject.x = dragX;
       gameObject.y = dragY;
 
     }, this);
 
-    this.input.on('dragenter', function(pointer, gameObject, target) {
+    this.input.on('dragenter', function (pointer, gameObject, target) {
       if (target.type == 'board') {
 
       } else if (target.type == 'swap') {
@@ -121,7 +129,7 @@ class playGame extends Phaser.Scene {
         target.setScale(1.75)
       }
     }, this)
-    this.input.on('dragleave', function(pointer, gameObject, target) {
+    this.input.on('dragleave', function (pointer, gameObject, target) {
       if (target.type == 'board') {
 
       } else if (target.type == 'swap') {
@@ -130,7 +138,7 @@ class playGame extends Phaser.Scene {
         target.setScale(1.25)
       }
     }, this)
-    this.input.on('drop', function(pointer, gameObject, target) {
+    this.input.on('drop', function (pointer, gameObject, target) {
       gameObject.x = target.x;
       gameObject.y = target.y;
       if (target.type == 'board') {
@@ -171,11 +179,12 @@ class playGame extends Phaser.Scene {
         var badScore = this.scoreWordList(this.notWords)
         this.score -= badScore
         this.scoreText.setText(this.score)
+        this.updateScore()
         this.boardNumber++
         this.boardText.setText(this.boardNumber + 1)
         var timer = this.time.addEvent({
           delay: 500, // ms
-          callback: function() {
+          callback: function () {
             this.firstWord(this.starterWords[this.boardNumber])
             this.notWords = []
           },
@@ -186,14 +195,14 @@ class playGame extends Phaser.Scene {
       }
     }, this)
 
-    this.input.on('dragend', function(pointer, gameObject, dropped) {
+    this.input.on('dragend', function (pointer, gameObject, dropped) {
       if (!dropped) {
         gameObject.x = gameObject.input.dragStartX;
         gameObject.y = gameObject.input.dragStartY;
       }
     }, this)
     var button = this.add.image(850, 1300, 'letters', 26).setInteractive()
-    button.on('pointerdown', function() {
+    button.on('pointerdown', function () {
       var tempScore = 0
       var wordsOnBoard = this.getWords()
       console.log(wordsOnBoard)
@@ -214,6 +223,7 @@ class playGame extends Phaser.Scene {
         }
         console.log(this.foundWords)
         console.log(this.notWords)
+        this.bonusText.setText(this.foundWords.length - this.notWords.length)
         this.score += tempScore
         this.scoreText.setText(this.score)
       }
@@ -231,6 +241,16 @@ class playGame extends Phaser.Scene {
   }
   update() {
 
+  }
+  updateScore() {
+    var bonus = this.foundWords.length - this.notWords.length
+    this.score *= bonus
+    this.scoreText.setText(this.score)
+
+    this.totalScore += this.score;
+    this.totalScoreText.setText(this.totalScore);
+    this.score = 0
+    this.scoreText.setText(this.score)
   }
   launchLetterPad(col, row) {
     this.blankCoo = { col: col, row: row }
@@ -346,7 +366,7 @@ class playGame extends Phaser.Scene {
             duration: 200,
             angle: 360,
             callbackScope: this,
-            onComplete: function() {
+            onComplete: function () {
               this.board[row][column].letter = null
               this.board[row][column].image.input.dropZone = true;
               this.playedLetters[row][column].setAlpha(0)
