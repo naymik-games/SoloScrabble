@@ -1,6 +1,6 @@
 let game;
-var g_letpool = [];   // letter pool
-var g_letscore = {};   // score for each letter
+var g_letpool = []; // letter pool
+var g_letscore = {}; // score for each letter
 this.g_racksize = 7;
 var g_letters = [["a", 1, 10], ["b", 4, 2], ["c", 4, 2], ["d", 2, 5], ["e", 1, 12],
 ["f", 4, 2], ["g", 3, 3], ["h", 4, 3], ["i", 1, 9], ["j", 10, 1],
@@ -8,8 +8,7 @@ var g_letters = [["a", 1, 10], ["b", 4, 2], ["c", 4, 2], ["d", 2, 5], ["e", 1, 1
 ["p", 4, 2], ["q", 10, 1], ["r", 1, 6], ["s", 1, 5], ["t", 1, 7],
 ["u", 2, 4], ["v", 4, 2], ["w", 4, 2], ["x", 8, 1], ["y", 4, 2],
 ["z", 10, 1], ["*", 0, 2]];
-var letterMaster =
-  [
+var letterMaster = [
 
   ]
 var g_vowels = { "a": 1, "e": 1, "i": 1, "o": 1, "u": 1 };
@@ -18,7 +17,7 @@ var g_letrange = "[a-z]";
 const HORIZONTAL = 0;
 const VERTICAL = 1;
 
-window.onload = function () {
+window.onload = function() {
   let gameConfig = {
     type: Phaser.AUTO,
     scale: {
@@ -56,10 +55,9 @@ class playGame extends Phaser.Scene {
     this.tileLettersValues = [1, 3, 3, 2, 1, 4, 2, 4, 1, 8, 5, 1, 3, 1, 1, 3, 10, 1, 1, 1, 1, 4, 4, 8, 4, 10, 0];
     this.selected = []
     this.selectedDir = null;
-    this.colText = this.add.bitmapText(85, 1550, 'gothic', '0', 80).setOrigin(.5).setTint(0xcbf7ff).setAlpha(1);
-    this.rowText = this.add.bitmapText(185, 1550, 'gothic', '0', 80).setOrigin(.5).setTint(0xcbf7ff).setAlpha(1);
-    this.scoreText = this.add.bitmapText(gameOptions.offsetX, gameOptions.offsetY - 100, 'gothic', '0', 80).setOrigin(0, 1).setTint(0xcbf7ff).setAlpha(1);
-    this.tileText = this.add.bitmapText(385, 1550, 'gothic', '0', 80).setOrigin(.5).setTint(0xcbf7ff).setAlpha(1);
+    //this.colText = this.add.bitmapText(85, 1550, 'gothic', '0', 80).setOrigin(.5).setTint(0xcbf7ff).setAlpha(1);
+    // this.rowText = this.add.bitmapText(185, 1550, 'gothic', '0', 80).setOrigin(.5).setTint(0xcbf7ff).setAlpha(1);
+    this.scoreText = this.add.bitmapText(gameOptions.offsetX, gameOptions.offsetY - 100, 'gothic', '0', 80).setOrigin(0, 1).setTint(0xffffff).setAlpha(1);
     this.score = 0
     this.starterWords = ['first', 'second', 'twist', 'quake']
     this.boardNumber = 0
@@ -76,12 +74,21 @@ class playGame extends Phaser.Scene {
     this.bg.displayWidth = (this.blockSize * gameOptions.cols) + 30
     this.bg.displayHeight = (this.blockSize * gameOptions.rows) + 30
 
+    this.swap = this.add.image(825, 1550, 'letters', 26).setScale(1.25).setInteractive({ dropZone: true })
+    this.swap.type = 'swap'
+    var clear = this.add.image(75, 1550, 'letters', 26).setScale(1.25).setInteractive({ dropZone: true })
+    clear.type = 'clear'
+    this.tileText = this.add.bitmapText(825, 1550, 'gothic', '0', 40).setOrigin(.5).setTint(0x000000).setAlpha(1);
+    this.boardText = this.add.bitmapText(75, 1550, 'gothic', '1', 40).setOrigin(.5).setTint(0x000000).setAlpha(1);
+
+
+
     this.createBoard()
     this.makeBag()
     this.firstWord(this.starterWords[this.boardNumber])
 
     var timer = this.time.addEvent({
-      delay: 1000,                // ms
+      delay: 1000, // ms
       callback: this.makeRack,
       //args: [],
       callbackScope: this,
@@ -96,20 +103,16 @@ class playGame extends Phaser.Scene {
     //this.myLetters = this.takeLetters(this.myLetters);
     //comp_letters = this.takeLetters(comp_letters);
 
-    this.swap = this.add.image(825, 1550, 'letters', 26).setScale(1.25).setInteractive({ dropZone: true })
-    this.swap.type = 'swap'
-    var clear = this.add.image(700, 1550, 'letters', 26).setScale(1.25).setInteractive({ dropZone: true })
-    clear.type = 'clear'
 
 
-    this.input.on('drag', function (pointer, gameObject, dragX, dragY) {
+    this.input.on('drag', function(pointer, gameObject, dragX, dragY) {
 
       gameObject.x = dragX;
       gameObject.y = dragY;
 
     }, this);
 
-    this.input.on('dragenter', function (pointer, gameObject, target) {
+    this.input.on('dragenter', function(pointer, gameObject, target) {
       if (target.type == 'board') {
 
       } else if (target.type == 'swap') {
@@ -118,7 +121,7 @@ class playGame extends Phaser.Scene {
         target.setScale(1.75)
       }
     }, this)
-    this.input.on('dragleave', function (pointer, gameObject, target) {
+    this.input.on('dragleave', function(pointer, gameObject, target) {
       if (target.type == 'board') {
 
       } else if (target.type == 'swap') {
@@ -127,12 +130,12 @@ class playGame extends Phaser.Scene {
         target.setScale(1.25)
       }
     }, this)
-    this.input.on('drop', function (pointer, gameObject, target) {
+    this.input.on('drop', function(pointer, gameObject, target) {
       gameObject.x = target.x;
       gameObject.y = target.y;
       if (target.type == 'board') {
-        this.colText.setText(target.col)
-        this.rowText.setText(target.row)
+        // this.colText.setText(target.col)
+        //  this.rowText.setText(target.row)
         if (gameObject.letter == '*') {
           this.launchLetterPad(target.col, target.row)
         }
@@ -169,9 +172,10 @@ class playGame extends Phaser.Scene {
         this.score -= badScore
         this.scoreText.setText(this.score)
         this.boardNumber++
+        this.boardText.setText(this.boardNumber + 1)
         var timer = this.time.addEvent({
-          delay: 500,                // ms
-          callback: function () {
+          delay: 500, // ms
+          callback: function() {
             this.firstWord(this.starterWords[this.boardNumber])
             this.notWords = []
           },
@@ -182,14 +186,14 @@ class playGame extends Phaser.Scene {
       }
     }, this)
 
-    this.input.on('dragend', function (pointer, gameObject, dropped) {
+    this.input.on('dragend', function(pointer, gameObject, dropped) {
       if (!dropped) {
         gameObject.x = gameObject.input.dragStartX;
         gameObject.y = gameObject.input.dragStartY;
       }
     }, this)
     var button = this.add.image(850, 1300, 'letters', 26).setInteractive()
-    button.on('pointerdown', function () {
+    button.on('pointerdown', function() {
       var tempScore = 0
       var wordsOnBoard = this.getWords()
       console.log(wordsOnBoard)
@@ -218,11 +222,11 @@ class playGame extends Phaser.Scene {
 
     }, this)
 
-    var buttonTest = this.add.image(850, 50, 'letters', 26).setInteractive()
-    buttonTest.on('pointerdown', function () {
-      this.scene.pause()
-      this.scene.launch('UI')
-    }, this)
+    /*  var buttonTest = this.add.image(850, 50, 'letters', 26).setInteractive()
+      buttonTest.on('pointerdown', function () {
+        this.scene.pause()
+        this.scene.launch('UI')
+      }, this) */
 
   }
   update() {
@@ -330,6 +334,8 @@ class playGame extends Phaser.Scene {
   }
   clearBoard() {
     //console.log(this.playedLetters)
+    console.log(this.foundWords.length)
+    console.log(this.notWords.length)
     for (let row = 0; row < gameOptions.rows; row++) {
       for (let column = 0; column < gameOptions.cols; column++) {
         if (this.playedLetters[row][column] != null) {
@@ -340,7 +346,7 @@ class playGame extends Phaser.Scene {
             duration: 200,
             angle: 360,
             callbackScope: this,
-            onComplete: function () {
+            onComplete: function() {
               this.board[row][column].letter = null
               this.board[row][column].image.input.dropZone = true;
               this.playedLetters[row][column].setAlpha(0)
@@ -366,15 +372,17 @@ class playGame extends Phaser.Scene {
   }
   firstWord(word) {
     var first = word
+    var startR = Phaser.Math.Between(0, gameOptions.rows - 1);
+    var startC = Phaser.Math.Between(0, 2);
     for (var i = 0; i < first.length; i++) {
       var ind = this.tileLetters.indexOf(first[i])
-      var block = this.add.image((gameOptions.offsetX + this.blockSize / 2) + (2 + i) * this.blockSize, gameOptions.offsetY + 4 * this.blockSize, 'letters', ind).setInteractive()
+      var block = this.add.image((gameOptions.offsetX + this.blockSize / 2) + (startC + i) * this.blockSize, gameOptions.offsetY + startR * this.blockSize, 'letters', ind).setInteractive()
       block.displayWidth = this.blockSize;
       block.displayHeight = this.blockSize
       block.index = ind
       block.letter = first[i]
-      this.board[4][(2 + i)].letter = first[i]
-      this.playedLetters[4][(2 + i)] = block
+      this.board[startR][(startC + i)].letter = first[i]
+      this.playedLetters[startR][(startC + i)] = block
     }
     this.foundWords.push(word)
     this.removeFromPool(word)
