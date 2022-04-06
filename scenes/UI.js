@@ -33,25 +33,25 @@ class UI extends Phaser.Scene {
 
   letterPad() {
     //this.letterContainer = this.add.group()
-    this.bg = this.add.image(155, 395, 'blank').setOrigin(0)
+    this.bg = this.add.image(155, 1195, 'blank').setOrigin(0)
     this.bg.displayWidth = (7 * 80) + 30
     this.bg.displayHeight = (4 * 80) + 30
     for (var i = 0; i < 26; i++) {
       if (i < 7) {
         var xPos = 210 + i * 80
-        var yPos = 450
+        var yPos = 1250
       } else if (i < 14) {
         var num = i - 7
         var xPos = 210 + num * 80
-        var yPos = 530
+        var yPos = 1330
       } else if (i < 21) {
         var num = i - 14
         var xPos = 210 + num * 80
-        var yPos = 610
+        var yPos = 1410
       } else {
         var num = i - 21
         var xPos = 210 + num * 80
-        var yPos = 690
+        var yPos = 1490
       }
 
       var letter = this.add.image(xPos, yPos, 'letters', i).setInteractive()

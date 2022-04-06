@@ -2,7 +2,7 @@ let game;
 var g_letpool = []; // letter pool
 var g_letscore = {}; // score for each letter
 this.g_racksize = 7;
-var g_letters = [["a", 1, 10], ["b", 4, 2], ["c", 4, 2], ["d", 2, 5], ["e", 1, 12],
+/* var g_letters = [["a", 1, 10], ["b", 4, 2], ["c", 4, 2], ["d", 2, 5], ["e", 1, 12],
 ["f", 4, 2], ["g", 3, 3], ["h", 4, 3], ["i", 1, 9], ["j", 10, 1],
 ["k", 5, 1], ["l", 1, 4], ["m", 3, 2], ["n", 1, 6], ["o", 1, 7],
 ["p", 4, 2], ["q", 10, 1], ["r", 1, 6], ["s", 1, 5], ["t", 1, 7],
@@ -13,7 +13,7 @@ var letterMaster = [
 ]
 var g_vowels = { "a": 1, "e": 1, "i": 1, "o": 1, "u": 1 };
 
-var g_letrange = "[a-z]";
+var g_letrange = "[a-z]"; */
 const HORIZONTAL = 0;
 const VERTICAL = 1;
 
@@ -83,15 +83,17 @@ class playGame extends Phaser.Scene {
 
     this.swap = this.add.image(825, 1550, 'letters', 26).setScale(1.25).setInteractive({ dropZone: true })
     this.swap.type = 'swap'
-    var clear = this.add.image(75, 1550, 'letters', 26).setScale(1.25).setInteractive({ dropZone: true })
-    clear.type = 'clear'
+
     this.tileText = this.add.bitmapText(825, 1550, 'gothic', '0', 40).setOrigin(.5).setTint(0x000000).setAlpha(1);
     this.boardText = this.add.bitmapText(75, 1550, 'gothic', '1', 40).setOrigin(.5).setTint(0x000000).setAlpha(1);
-
+    this.scrabbleLetters = this.makeBag(scrabbleLettersDict)
+    this.shuffle_pool()
+    console.log(this.scrabbleLetters)
+    //console.log(g_letpool)
 
 
     this.createBoard()
-    this.makeBag()
+
     var rand = Phaser.Math.Between(0, this.starterWords.length - 1)
     this.firstWord(this.starterWords[rand])
 
@@ -125,16 +127,12 @@ class playGame extends Phaser.Scene {
 
       } else if (target.type == 'swap') {
         target.setScale(1.75)
-      } else if (target.type == 'clear') {
-        target.setScale(1.75)
       }
     }, this)
     this.input.on('dragleave', function (pointer, gameObject, target) {
       if (target.type == 'board') {
 
       } else if (target.type == 'swap') {
-        target.setScale(1.25)
-      } else if (target.type == 'clear') {
         target.setScale(1.25)
       }
     }, this)
@@ -167,31 +165,6 @@ class playGame extends Phaser.Scene {
         target.setScale(1.25)
         gameObject.setAlpha(0)
 
-      } else if (target.type == 'clear') {
-        /* this.rack.splice(gameObject.slot, 1, null)
-        this.emptySlots.push(gameObject.slot)
-        this.getNewTiles() */
-        gameObject.x = gameObject.input.dragStartX;
-        gameObject.y = gameObject.input.dragStartY;
-        target.setScale(1.25)
-        //gameObject.setAlpha(0)
-        this.clearBoard()
-        var badScore = this.scoreWordList(this.notWords)
-        this.score -= badScore
-        this.scoreText.setText(this.score)
-        this.updateScore()
-        this.boardNumber++
-        this.boardText.setText(this.boardNumber + 1)
-        var timer = this.time.addEvent({
-          delay: 500, // ms
-          callback: function () {
-            this.firstWord(this.starterWords[this.boardNumber])
-            this.notWords = []
-          },
-          //args: [],
-          callbackScope: this,
-          loop: false
-        });
       }
     }, this)
 
@@ -201,46 +174,81 @@ class playGame extends Phaser.Scene {
         gameObject.y = gameObject.input.dragStartY;
       }
     }, this)
-    var button = this.add.image(850, 1300, 'letters', 26).setInteractive()
-    button.on('pointerdown', function () {
-      var tempScore = 0
-      var wordsOnBoard = this.getWords()
-      console.log(wordsOnBoard)
-      if (wordsOnBoard.length > 0) {
-        for (var i = 0; i < wordsOnBoard.length; i++) {
-          if (ScrabbleWordList.indexOf(wordsOnBoard[i]) > -1) {
-            if (this.foundWords.indexOf(wordsOnBoard[i]) < 0) {
-              this.foundWords.push(wordsOnBoard[i])
-              tempScore += this.scrabbleScore(wordsOnBoard[i])
-            }
-
-          } else {
-            if (this.notWords.indexOf(wordsOnBoard[i]) < 0) {
-              this.notWords.push(wordsOnBoard[i])
-            }
-          }
-
-        }
-        console.log(this.foundWords)
-        console.log(this.notWords)
-        this.bonusText.setText(this.foundWords.length - this.notWords.length)
-        this.score += tempScore
-        this.scoreText.setText(this.score)
-      }
-      this.disableBoard()
-      this.getNewTiles()
-
-    }, this)
-
+    var playButton = this.add.image(850, 1300, 'letters', 26).setInteractive()
+    playButton.on('pointerdown', this.playWord, this)
+    var clearButton = this.add.image(75, 1550, 'letters', 26).setScale(1.25).setInteractive()
+    clearButton.on('pointerdown', this.clear, this)
     /*  var buttonTest = this.add.image(850, 50, 'letters', 26).setInteractive()
       buttonTest.on('pointerdown', function () {
         this.scene.pause()
         this.scene.launch('UI')
       }, this) */
 
+
+
   }
   update() {
 
+  }
+
+  playWord() {
+    var tempScore = 0
+    var wordsOnBoard = this.getWords()
+    console.log(wordsOnBoard)
+    if (wordsOnBoard.length > 0) {
+      for (var i = 0; i < wordsOnBoard.length; i++) {
+        if (ScrabbleWordList.indexOf(wordsOnBoard[i]) > -1) {
+          if (this.foundWords.indexOf(wordsOnBoard[i]) < 0) {
+            this.foundWords.push(wordsOnBoard[i])
+            if (this.wordsbonus.length > 0) {
+              console.log(this.wordsbonus[i])
+            }
+            tempScore += this.scrabbleScore(wordsOnBoard[i]) * this.wordsbonus[i]
+          }
+
+        } else {
+          if (this.notWords.indexOf(wordsOnBoard[i]) < 0) {
+            this.notWords.push(wordsOnBoard[i])
+          }
+        }
+
+      }
+      console.log(this.foundWords)
+      console.log(this.notWords)
+      this.bonusText.setText(this.foundWords.length - this.notWords.length)
+      this.score += tempScore
+      this.scoreText.setText(this.score)
+    }
+    this.disableBoard()
+
+    this.getNewTiles()
+
+  }
+  clear() {
+    this.clearBoard()
+    var badScore = this.scoreWordList(this.notWords)
+    this.score -= badScore
+    this.scoreText.setText(this.score)
+    this.updateScore()
+    this.boardNumber++
+    this.boardText.setText(this.boardNumber + 1)
+    var timer = this.time.addEvent({
+      delay: 500, // ms
+      callback: function () {
+        if (this.scrabbleLetters.length > 0) {
+          this.firstWord(this.starterWords[this.boardNumber])
+          this.notWords = []
+          this.addDoubleBonus(3)
+          this.addTripleBonus(2)
+        } else {
+          alert('Done')
+        }
+
+      },
+      //args: [],
+      callbackScope: this,
+      loop: false
+    });
   }
   updateScore() {
     var bonus = this.foundWords.length - this.notWords.length
@@ -266,73 +274,93 @@ class playGame extends Phaser.Scene {
   }
   getWords() {
     let words = []
-
+    this.wordsbonus = []
     //row words
     for (let row = 0; row < gameOptions.rows; row++) {
       let word = '';
+      let wordBonus = 1
       for (let column = 0; column < gameOptions.cols; column++) {
         let letter = this.board[row][column].letter
+        let bonus = this.board[row][column].bonus
         if (letter) {
           word += letter;
-          //console.log(row + ',' + column)
+          if (bonus > wordBonus) {
+            wordBonus = bonus
+          }
         } else {
-          if (word.length >= 2)
+          if (word.length >= 2) {
             words.push(word);
-
+            this.wordsbonus.push(wordBonus)
+          }
           word = '';
+          wordBonus = 1
         }
       }
-      if (word.length >= 2)
+      if (word.length >= 2) {
         words.push(word);
+        this.wordsbonus.push(wordBonus)
+      }
     }
 
     //column words
     for (let column = 0; column < gameOptions.cols; column++) {
       let word = '';
+      let wordBonus = 1
       for (let row = 0; row < gameOptions.rows; row++) {
         //let field = this.fields[column + row * gameOptions.cols];
         let letter = this.board[row][column].letter
+        let bonus = this.board[row][column].bonus
         if (letter) {
           word += letter;
-          // this.playedLetters[row][column].push(letter)
+          if (bonus > wordBonus) {
+            wordBonus = bonus
+          }
+
         } else {
-          if (word.length >= 2)
+          if (word.length >= 2) {
             words.push(word);
+            this.wordsbonus.push(wordBonus)
+          }
           word = '';
+          wordBonus = 1
         }
       }
-      if (word.length >= 2)
+      if (word.length >= 2) {
+        this.wordsbonus.push(wordBonus)
         words.push(word);
+      }
     }
 
     return words;
   }
   getNewTiles() {
     for (var i = 0; i < this.emptySlots.length; i++) {
-      var letter = this.getLetter()
-      var ind = this.tileLetters.indexOf(letter[0])
-      var block = this.add.image(-100, 1300, 'letters', ind).setInteractive()
-      block.displayWidth = this.blockSize;
-      block.displayHeight = this.blockSize;
-      block.index = ind
-      block.letter = letter[0]
-      block.slot = this.emptySlots[i]
-      this.input.setDraggable(block);
-      this.rack.splice(this.emptySlots[i], 1, block)
-      var tween = this.tweens.add({
-        targets: block,
-        x: (gameOptions.offsetX + this.blockSize / 2) + this.emptySlots[i] * this.blockSize,
-        duration: 400,
-        angle: 360,
-        delay: i * 50
-      })
+      if (this.scrabbleLetters.length > 0) {
+        var letter = this.getLetter()
+        var ind = this.tileLetters.indexOf(letter[0])
+        var block = this.add.image(-100, 1300, 'letters', ind).setInteractive()
+        block.displayWidth = this.blockSize;
+        block.displayHeight = this.blockSize;
+        block.index = ind
+        block.letter = letter[0]
+        block.slot = this.emptySlots[i]
+        this.input.setDraggable(block);
+        this.rack.splice(this.emptySlots[i], 1, block)
+        var tween = this.tweens.add({
+          targets: block,
+          x: (gameOptions.offsetX + this.blockSize / 2) + this.emptySlots[i] * this.blockSize,
+          duration: 400,
+          angle: 360,
+          delay: i * 50
+        })
+      }
     }
-    this.tileText.setText(g_letpool.length)
+    this.tileText.setText(this.scrabbleLetters.length)
     this.emptySlots = []
   }
   getLetter() {
-
-    return g_letpool.splice(0, 1);
+    return this.scrabbleLetters.splice(0, 1)
+    // return g_letpool.splice(0, 1);
   }
   scrabbleScore(word) {
     let newAlphabet = { a: 1, e: 1, i: 1, o: 1, u: 1, l: 1, n: 1, r: 1, s: 1, t: 1, d: 2, g: 2, b: 3, c: 3, m: 3, p: 3, f: 4, h: 4, v: 4, w: 4, y: 4, k: 5, j: 8, x: 8, q: 10, z: 10 },
@@ -358,6 +386,8 @@ class playGame extends Phaser.Scene {
     console.log(this.notWords.length)
     for (let row = 0; row < gameOptions.rows; row++) {
       for (let column = 0; column < gameOptions.cols; column++) {
+        this.board[row][column].bonus = 1;
+        this.board[row][column].image.clearTint()
         if (this.playedLetters[row][column] != null) {
           var tween = this.tweens.add({
             targets: this.playedLetters[row][column],
@@ -365,6 +395,7 @@ class playGame extends Phaser.Scene {
             y: this.swap.y,
             duration: 200,
             angle: 360,
+            //delay: row * 75,
             callbackScope: this,
             onComplete: function () {
               this.board[row][column].letter = null
@@ -386,6 +417,11 @@ class playGame extends Phaser.Scene {
         if (this.playedLetters[row][column] != null) {
           this.playedLetters[row][column].disableInteractive();
           this.board[row][column].image.input.dropZone = false;
+          if (this.board[row][column].bonus == 2) {
+            this.playedLetters[row][column].setTint(0x00ff00)
+          } if (this.board[row][column].bonus == 3) {
+            this.playedLetters[row][column].setTint(0xff0000)
+          }
         }
       }
     }
@@ -396,23 +432,34 @@ class playGame extends Phaser.Scene {
     var startC = Phaser.Math.Between(0, 2);
     for (var i = 0; i < first.length; i++) {
       var ind = this.tileLetters.indexOf(first[i])
-      var block = this.add.image((gameOptions.offsetX + this.blockSize / 2) + (startC + i) * this.blockSize, gameOptions.offsetY + startR * this.blockSize, 'letters', ind).setInteractive()
+      var block = this.add.image(this.swap.x, this.swap.y, 'letters', ind).setInteractive()
       block.displayWidth = this.blockSize;
       block.displayHeight = this.blockSize
       block.index = ind
       block.letter = first[i]
       this.board[startR][(startC + i)].letter = first[i]
       this.playedLetters[startR][(startC + i)] = block
+      var tween = this.tweens.add({
+        targets: block,
+        x: (gameOptions.offsetX + this.blockSize / 2) + (startC + i) * this.blockSize,
+        y: gameOptions.offsetY + startR * this.blockSize,
+        duration: 400,
+        angle: 360,
+        delay: i * 50
+      })
     }
     this.foundWords.push(word)
     this.removeFromPool(word)
   }
   removeFromPool(word) {
     for (var i = 0; i < word.length; i++) {
-      var ind = g_letpool.indexOf(word[i])
-      g_letpool.splice(ind, 1);
+      //var ind = g_letpool.indexOf(word[i])
+      // g_letpool.splice(ind, 1);
+      var ind = this.scrabbleLetters.indexOf(word[i])
+      this.scrabbleLetters.splice(ind, 1);
+
     }
-    this.tileText.setText(g_letpool.length)
+    this.tileText.setText(this.scrabbleLetters.length)
   }
   makeRack() {
     for (var i = 0; i < 7; i++) {
@@ -434,7 +481,31 @@ class playGame extends Phaser.Scene {
         delay: i * 50
       })
     }
-    this.tileText.setText(g_letpool.length)
+    this.tileText.setText(this.scrabbleLetters.length)
+  }
+  addDoubleBonus(count) {
+    var i = 0
+    while (i < count) {
+      var row = Phaser.Math.Between(0, gameOptions.rows - 1)
+      var col = Phaser.Math.Between(0, gameOptions.cols - 1)
+      if (this.board[row][col].bonus == 1 && this.board[row][col].letter == null) {
+        this.board[row][col].bonus = 2;
+        this.board[row][col].image.setTint(0x00ff00)
+        i++
+      }
+    }
+  }
+  addTripleBonus(count) {
+    var i = 0
+    while (i < count) {
+      var row = Phaser.Math.Between(0, gameOptions.rows - 1)
+      var col = Phaser.Math.Between(0, gameOptions.cols - 1)
+      if (this.board[row][col].bonus == 1 && this.board[row][col].letter == null) {
+        this.board[row][col].bonus = 3;
+        this.board[row][col].image.setTint(0xff0000)
+        i++
+      }
+    }
   }
   createBoard() {
     this.playedLetters = []
@@ -461,31 +532,31 @@ class playGame extends Phaser.Scene {
     }
     //console.log(this.board)
     //console.log(this.playedLetters)
-    this.board[3][3].image.setTint(0x00ff00)
+    this.addDoubleBonus(1)
+    this.addTripleBonus(1)
   }
 
-  makeBag() {
-    var numalpha = g_letters.length;
-    for (var i = 0; i < numalpha; i++) {
-      var letinfo = g_letters[i];
-      var whichlt = letinfo[0];
-      var lpoints = letinfo[1];
-      var numlets = letinfo[2];
-      g_letscore[whichlt] = lpoints;
-      for (var j = 0; j < numlets; j++)
-        g_letpool.push(whichlt);
+  makeBag(lettersDict) {
+    var result = []
+    for (const [key, value] of Object.entries(lettersDict)) {
+      // from: https://stackoverflow.com/questions/34913675/
+      var name = key
+      var count = value[0]
+      // var score = value[1]
+      for (const i in [...Array(count).keys()]) {
+        // equivalent of range() in python. From: https://stackoverflow.com/questions/3895478/
+        result.push(name)
+      }
     }
-    this.tileText.setText(g_letpool.length)
-    this.shuffle_pool();
-    //console.log(g_letpool)
+    return result
   }
   shuffle_pool() {
-    var total = g_letpool.length;
+    var total = this.scrabbleLetters.length;
     for (var i = 0; i < total; i++) {
       var rnd = Math.floor((Math.random() * total));
-      var c = g_letpool[i];
-      g_letpool[i] = g_letpool[rnd];
-      g_letpool[rnd] = c;
+      var c = this.scrabbleLetters[i];
+      this.scrabbleLetters[i] = this.scrabbleLetters[rnd];
+      this.scrabbleLetters[rnd] = c;
     }
   }
 
