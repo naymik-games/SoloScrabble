@@ -60,6 +60,9 @@ class playGame extends Phaser.Scene {
     this.scoreText = this.add.bitmapText(gameOptions.offsetX, gameOptions.offsetY - 100, 'gothic', '0', 80).setOrigin(0, 1).setTint(0xffffff).setAlpha(1);
     this.xText = this.add.bitmapText(gameOptions.offsetX + 195, gameOptions.offsetY - 100, 'gothic', 'x', 80).setOrigin(0, 1).setTint(0xcf5555).setAlpha(1);
     this.bonusText = this.add.bitmapText(gameOptions.offsetX + 245, gameOptions.offsetY - 100, 'gothic', '0', 80).setOrigin(0, 1).setTint(0xcffffff).setAlpha(1);
+    var tsBack = this.add.image(game.config.width - 60, gameOptions.offsetY - 85, 'blank').setOrigin(1).setTint(0x000000)
+    tsBack.displayWidth = 250
+    tsBack.displayHeight = 110
     this.totalScoreText = this.add.bitmapText(game.config.width - gameOptions.offsetX, gameOptions.offsetY - 100, 'gothic', '0', 80).setOrigin(1).setTint(0xffffff).setAlpha(1);
 
     this.score = 0
@@ -81,11 +84,17 @@ class playGame extends Phaser.Scene {
     this.bg.displayWidth = (this.blockSize * gameOptions.cols) + 30
     this.bg.displayHeight = (this.blockSize * gameOptions.rows) + 30
 
+    var rackBack = this.add.image(gameOptions.offsetX - 15, 1240, 'blank').setOrigin(0).setTint(0x000000)
+    rackBack.displayWidth = 7 * this.blockSize + 30
+    rackBack.displayHeight = this.blockSize + 30
+
+    this.swapIcon = this.add.image(710, 1550, 'swap').setScale(1.25).setInteractive({ dropZone: true });
+    this.swapIcon.type = 'swap'
     this.swap = this.add.image(825, 1550, 'letters', 26).setScale(1.25).setInteractive({ dropZone: true })
     this.swap.type = 'swap'
 
     this.tileText = this.add.bitmapText(825, 1550, 'gothic', '0', 40).setOrigin(.5).setTint(0x000000).setAlpha(1);
-    this.boardText = this.add.bitmapText(75, 1550, 'gothic', '1', 40).setOrigin(.5).setTint(0x000000).setAlpha(1);
+
     this.scrabbleLetters = this.makeBag(scrabbleLettersDict)
     this.shuffle_pool()
     console.log(this.scrabbleLetters)
@@ -174,10 +183,14 @@ class playGame extends Phaser.Scene {
         gameObject.y = gameObject.input.dragStartY;
       }
     }, this)
-    var playButton = this.add.image(850, 1300, 'letters', 26).setInteractive()
+    var playButton = this.add.image(820, 1300, 'play').setScale(1.4).setInteractive()
     playButton.on('pointerdown', this.playWord, this)
-    var clearButton = this.add.image(75, 1550, 'letters', 26).setScale(1.25).setInteractive()
-    clearButton.on('pointerdown', this.clear, this)
+    //var clearButton = this.add.image(75, 1550, 'letters', 26).setScale(1.25).setInteractive()
+
+    var clearIcon = this.add.image(175, 1550, 'clear').setScale(1.25).setInteractive()
+    clearIcon.on('pointerdown', this.clear, this)
+    this.boardText = this.add.bitmapText(75, 1550, 'gothic', '1', 60).setOrigin(.5).setTint(0xffffff).setAlpha(1);
+
     /*  var buttonTest = this.add.image(850, 50, 'letters', 26).setInteractive()
       buttonTest.on('pointerdown', function () {
         this.scene.pause()
@@ -462,6 +475,9 @@ class playGame extends Phaser.Scene {
     this.tileText.setText(this.scrabbleLetters.length)
   }
   makeRack() {
+    var rackBack = this.add.image(gameOptions.offsetX - 15, 1240, 'blank').setOrigin(0).setTint(0x000000)
+    rackBack.displayWidth = 7 * this.blockSize + 30
+    rackBack.displayHeight = this.blockSize + 30
     for (var i = 0; i < 7; i++) {
       var lett = this.getLetter()
       var ind = this.tileLetters.indexOf(lett[0])
