@@ -58,18 +58,20 @@ class playGame extends Phaser.Scene {
     //this.colText = this.add.bitmapText(85, 1550, 'gothic', '0', 80).setOrigin(.5).setTint(0xcbf7ff).setAlpha(1);
     // this.rowText = this.add.bitmapText(185, 1550, 'gothic', '0', 80).setOrigin(.5).setTint(0xcbf7ff).setAlpha(1);
     this.scoreText = this.add.bitmapText(gameOptions.offsetX, gameOptions.offsetY - 100, 'gothic', '0', 80).setOrigin(0, 1).setTint(0xffffff).setAlpha(1);
-    this.xText = this.add.bitmapText(gameOptions.offsetX + 195, gameOptions.offsetY - 100, 'gothic', 'x', 80).setOrigin(0, 1).setTint(0xcf5555).setAlpha(1);
-    this.bonusText = this.add.bitmapText(gameOptions.offsetX + 245, gameOptions.offsetY - 100, 'gothic', '0', 80).setOrigin(0, 1).setTint(0xcffffff).setAlpha(1);
+    this.xText = this.add.bitmapText(gameOptions.offsetX + 195, gameOptions.offsetY - 100, 'gothic', 'x', 50).setOrigin(0, 1).setTint(0xD6DEFF).setAlpha(1);
+    this.bonusText = this.add.bitmapText(gameOptions.offsetX + 245, gameOptions.offsetY - 100, 'gothic', '0', 50).setOrigin(0, 1).setTint(0xcffffff).setAlpha(1);
     var tsBack = this.add.image(game.config.width - 60, gameOptions.offsetY - 85, 'blank').setOrigin(1).setTint(0x000000)
     tsBack.displayWidth = 250
     tsBack.displayHeight = 110
     this.totalScoreText = this.add.bitmapText(game.config.width - gameOptions.offsetX, gameOptions.offsetY - 100, 'gothic', '0', 80).setOrigin(1).setTint(0xffffff).setAlpha(1);
+    this.bestScoreText = this.add.bitmapText(game.config.width - gameOptions.offsetX, gameOptions.offsetY - 200, 'gothic', gameSettings.topScore, 50).setOrigin(1).setTint(0xD6DEFF).setAlpha(1);
+
+    this.wordText = this.add.bitmapText(game.config.width / 2, 1375, 'gothic', '', 50).setOrigin(.5, 0).setTint(0xcffffff).setAlpha(1);
+
 
     this.score = 0
     this.totalScore = 0
-    var starterWordsString = 'first twist quake frodo luke solo house zebras board tile mouse catch witch famine news school simple water hunter'
-    this.starterWords = []
-    this.starterWords = starterWordsString.split(" ")
+
     this.boardNumber = 0
 
     this.blockSize = (game.config.width - gameOptions.offsetX * 2) / gameOptions.cols
@@ -79,8 +81,9 @@ class playGame extends Phaser.Scene {
     this.emptySlots = []
     this.foundWords = []
     this.notWords = []
+    this.scoreDone = true;
 
-    this.bg = this.add.image(gameOptions.offsetX - 15, (gameOptions.offsetY - (this.blockSize / 2)) - 15, 'blank').setOrigin(0).setTint(0x7b8274)
+    this.bg = this.add.image(gameOptions.offsetX - 15, (gameOptions.offsetY - (this.blockSize / 2)) - 15, 'blank').setOrigin(0).setTint(0x000000)
     this.bg.displayWidth = (this.blockSize * gameOptions.cols) + 30
     this.bg.displayHeight = (this.blockSize * gameOptions.rows) + 30
 
@@ -103,8 +106,8 @@ class playGame extends Phaser.Scene {
 
     this.createBoard()
 
-    var rand = Phaser.Math.Between(0, this.starterWords.length - 1)
-    this.firstWord(this.starterWords[rand])
+    var rand = Phaser.Math.Between(0, starterWords.length - 1)
+    this.firstWord(starterWords[rand])
 
     var timer = this.time.addEvent({
       delay: 1000, // ms
@@ -160,6 +163,8 @@ class playGame extends Phaser.Scene {
           this.rack.splice(gameObject.slot, 1, null)
           this.emptySlots.push(gameObject.slot)
         }
+        this.clearIcon.disableInteractive();
+        this.clearIcon.setAlpha(.5)
         //gameObject.disableInteractive();
         //target.input.dropZone = false;
         //console.log(this.board)
@@ -187,32 +192,47 @@ class playGame extends Phaser.Scene {
     playButton.on('pointerdown', this.playWord, this)
     //var clearButton = this.add.image(75, 1550, 'letters', 26).setScale(1.25).setInteractive()
 
-    var clearIcon = this.add.image(175, 1550, 'clear').setScale(1.25).setInteractive()
-    clearIcon.on('pointerdown', this.clear, this)
+    this.clearIcon = this.add.image(175, 1550, 'clear').setScale(1.25).setAlpha(.5)
+    this.clearIcon.on('pointerdown', this.clear, this)
     this.boardText = this.add.bitmapText(75, 1550, 'gothic', '1', 60).setOrigin(.5).setTint(0xffffff).setAlpha(1);
 
+    var homeIcon = this.add.image(game.config.width / 2, 1550, 'menu').setScale(1.25).setInteractive();
+    homeIcon.on('pointerdown', function () {
+      this.scene.stop();
+      this.scene.start('startGame')
+    }, this)
     /*  var buttonTest = this.add.image(850, 50, 'letters', 26).setInteractive()
       buttonTest.on('pointerdown', function () {
         this.scene.pause()
         this.scene.launch('UI')
       }, this) */
 
-
+    this.scoreBuffer = 0;
 
   }
   update() {
-
+    if (this.scoreBuffer > 0) {
+      this.scoreDone = false;
+      this.incrementScore();
+      this.scoreBuffer--;
+    } else {
+      this.scoreDone = true
+    }
   }
 
   playWord() {
+    //this.showToast('testing')
     var tempScore = 0
     var wordsOnBoard = this.getWords()
+    var tempFound = []
+    var tempNot = []
     console.log(wordsOnBoard)
     if (wordsOnBoard.length > 0) {
       for (var i = 0; i < wordsOnBoard.length; i++) {
         if (ScrabbleWordList.indexOf(wordsOnBoard[i]) > -1) {
           if (this.foundWords.indexOf(wordsOnBoard[i]) < 0) {
             this.foundWords.push(wordsOnBoard[i])
+            tempFound.push(wordsOnBoard[i])
             if (this.wordsbonus.length > 0) {
               console.log(this.wordsbonus[i])
             }
@@ -222,23 +242,44 @@ class playGame extends Phaser.Scene {
         } else {
           if (this.notWords.indexOf(wordsOnBoard[i]) < 0) {
             this.notWords.push(wordsOnBoard[i])
+            tempNot.push(wordsOnBoard[i])
           }
         }
 
       }
-      console.log(this.foundWords)
-      console.log(this.notWords)
+      //console.log(this.foundWords)
+      //console.log(this.notWords)
+      console.log(tempFound)
+      console.log(tempNot)
+      if (tempFound.length == 1) {
+        var word = 'word'
+      } else {
+        var word = 'words'
+      }
+      if (tempNot.length == 1) {
+        var error = 'error'
+      } else {
+        var error = 'errors'
+      }
+      this.wordText.setText(tempFound.length + ' ' + word + ', ' + tempNot.length + ' ' + error)
       this.bonusText.setText(this.foundWords.length - this.notWords.length)
       this.score += tempScore
       this.scoreText.setText(this.score)
+      if (tempFound.length > 0) {
+        this.wordFindEmit(this.scoreText.x, this.scoreText.y)
+      }
     }
     this.disableBoard()
 
     this.getNewTiles()
-
+    this.clearIcon.setInteractive();
+    this.clearIcon.setAlpha(1)
   }
   clear() {
+    this.clearIcon.disableInteractive();
+    this.clearIcon.setAlpha(.5)
     this.clearBoard()
+    this.wordText.setText('')
     var badScore = this.scoreWordList(this.notWords)
     this.score -= badScore
     this.scoreText.setText(this.score)
@@ -249,12 +290,13 @@ class playGame extends Phaser.Scene {
       delay: 500, // ms
       callback: function () {
         if (this.scrabbleLetters.length > 0) {
-          this.firstWord(this.starterWords[this.boardNumber])
+          var rand = Phaser.Math.Between(0, starterWords.length - 1)
+          this.firstWord(starterWords[rand])
           this.notWords = []
           this.addDoubleBonus(3)
           this.addTripleBonus(2)
         } else {
-          alert('Done')
+          this.endGame()
         }
 
       },
@@ -263,15 +305,36 @@ class playGame extends Phaser.Scene {
       loop: false
     });
   }
+  endGame() {
+    this.showToast('Game Over')
+    if (this.rack.length == 0) {
+      this.scoreBuffer += 1000
+      this.showToast('all tiles bonus')
+    }
+
+    if (this.totalScore > gameSettings.topScore) {
+      gameSettings.topScore = this.totalScore
+    }
+    if (this.foundWords.length > gameSettings.mostWordsFound) {
+      gameSettings.mostWordsFound = this.foundWords.length
+    }
+    gameSettings.lastScore = this.totalScore
+    this.saveSettins()
+  }
   updateScore() {
     var bonus = this.foundWords.length - this.notWords.length
     this.score *= bonus
     this.scoreText.setText(this.score)
-
-    this.totalScore += this.score;
-    this.totalScoreText.setText(this.totalScore);
+    this.scoreBuffer += this.score
+    //this.totalScore += this.score;
+    // this.totalScoreText.setText(this.totalScore);
+    //this.wordFindEmit(this.totalScoreText.x, this.totalScoreText.y)
     this.score = 0
     this.scoreText.setText(this.score)
+  }
+  incrementScore() {
+    this.totalScore += 1;
+    this.totalScoreText.setText(this.totalScore);
   }
   launchLetterPad(col, row) {
     this.blankCoo = { col: col, row: row }
@@ -401,6 +464,7 @@ class playGame extends Phaser.Scene {
       for (let column = 0; column < gameOptions.cols; column++) {
         this.board[row][column].bonus = 1;
         this.board[row][column].image.clearTint()
+        this.board[row][column].image.input.dropZone = true;
         if (this.playedLetters[row][column] != null) {
           var tween = this.tweens.add({
             targets: this.playedLetters[row][column],
@@ -412,7 +476,7 @@ class playGame extends Phaser.Scene {
             callbackScope: this,
             onComplete: function () {
               this.board[row][column].letter = null
-              this.board[row][column].image.input.dropZone = true;
+
               this.playedLetters[row][column].setAlpha(0)
               this.playedLetters[row][column] = null
 
@@ -475,7 +539,7 @@ class playGame extends Phaser.Scene {
     this.tileText.setText(this.scrabbleLetters.length)
   }
   makeRack() {
-    var rackBack = this.add.image(gameOptions.offsetX - 15, 1240, 'blank').setOrigin(0).setTint(0x000000)
+    var rackBack = this.add.image(gameOptions.offsetX - 15, 1235, 'blank').setOrigin(0).setTint(0x000000)
     rackBack.displayWidth = 7 * this.blockSize + 30
     rackBack.displayHeight = this.blockSize + 30
     for (var i = 0; i < 7; i++) {
@@ -523,6 +587,19 @@ class playGame extends Phaser.Scene {
       }
     }
   }
+  addBlocks(count) {
+    var i = 0
+    while (i < count) {
+      var row = Phaser.Math.Between(0, gameOptions.rows - 1)
+      var col = Phaser.Math.Between(0, gameOptions.cols - 1)
+      if (this.board[row][col].bonus == 1 && this.board[row][col].letter == null) {
+        this.board[row][col].block = true
+        this.board[row][col].image.setTint(0x000000)
+        this.board[row][col].image.input.dropZone = false;
+        i++
+      }
+    }
+  }
   createBoard() {
     this.playedLetters = []
     for (var i = 0; i < gameOptions.rows; i++) {
@@ -540,6 +617,7 @@ class playGame extends Phaser.Scene {
         block.row = i
         block.col = j
         block.type = 'board'
+        block.block = false;
         boardT.push(tile)
         played.push(null)
       }
@@ -550,6 +628,7 @@ class playGame extends Phaser.Scene {
     //console.log(this.playedLetters)
     this.addDoubleBonus(1)
     this.addTripleBonus(1)
+    //this.addBlocks(3)
   }
 
   makeBag(lettersDict) {
@@ -575,5 +654,86 @@ class playGame extends Phaser.Scene {
       this.scrabbleLetters[rnd] = c;
     }
   }
+  showToast(text) {
+    if (this.toastBox) {
+      this.toastBox.destroy(true);
+    }
+    var toastBox = this.add.container().setDepth(2);
+    var backToast = this.add.image(0, 0, 'blank').setDepth(2);
+    backToast.setAlpha(.9);
+    backToast.displayWidth = 700;
+    backToast.displayHeight = 90;
+    toastBox.add(backToast);
+    toastBox.setPosition(game.config.width / 2, -100);
+    var toastText = this.add.bitmapText(20, 0, 'gothic', text, 52,).setTint(0x000000).setOrigin(.5, .5).setDepth(2);
+    toastText.setMaxWidth(game.config.width - 10);
+    toastBox.add(toastText);
+    this.toastBox = toastBox;
+    this.tweens.add({
+      targets: this.toastBox,
+      //alpha: .5,
+      y: 95,
+      duration: 500,
+      //  yoyo: true,
+      callbackScope: this,
+      onComplete: function () {
+        this.time.addEvent({
+          delay: 2500,
+          callback: this.hideToast,
+          callbackScope: this
+        });
+      }
+    });
+    //this.time.addEvent({delay: 2000, callback: this.hideToast, callbackScope: this});
+  }
+  hideToast() {
+    this.tweens.add({
+      targets: this.toastBox,
+      //alpha: .5,
+      y: -95,
+      duration: 500,
+      //  yoyo: true,
+      callbackScope: this,
+      onComplete: function () {
+        this.toastBox.destroy(true);
+      }
+    });
 
+  }
+  wordFindEmit(targetx, targety) {
+
+    var particles = this.add.particles("particle");
+
+    //.setTint(0x7d1414);
+    var emitter = particles.createEmitter({
+      // particle speed - particles do not move
+      // speed: 1000,
+      //frame: { frames: [0, 1, 2, 3], cycle: true },
+
+      speed: {
+        min: -500,
+        max: 500
+      },
+      // particle scale: from 1 to zero
+      scale: {
+        start: 4,
+        end: 0
+      },
+      // particle alpha: from opaque to transparent
+      alpha: {
+        start: 1,
+        end: 1
+      },
+      // particle frequency: one particle every 100 milliseconds
+      frequency: 25,
+      // particle lifespan: 1 second
+      lifespan: 1000
+    });
+    //emitter.tint.onChange(0x7d1414);
+    emitter.explode(20, targetx, targety);
+
+  }
+  saveSettins() {
+    localStorage.setItem('ssSettings', JSON.stringify(gameSettings));
+  }
 }
