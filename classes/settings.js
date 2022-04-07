@@ -13,15 +13,14 @@ let gameOptions = {
 
 }
 
-
+var starterWordsString = 'first twist quake solo house zebras board tile mouse catch witch famine news school simple water hunter'
+var starterWords = []
+starterWords = starterWordsString.split(" ")
 let gameSettings;
 var defaultValues = {
-  mostDotsMoves: 0,
-  mostDotsTime: 0,
-  levelStatus: [0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
-  totalSquares: 0,
-  group: 0,
-  currentLevel: 0
+  topScore: 0,
+  lastScore: 0,
+  mostWordsFound: 0
 }
 // the tiles in scrabble
 // NAME : [count, score]
