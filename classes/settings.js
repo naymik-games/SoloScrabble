@@ -52,4 +52,4 @@ const scrabbleLettersDict = {
   "x": [1, 8],
   "y": [2, 4],
   "z": [1, 10]
-}
+} 

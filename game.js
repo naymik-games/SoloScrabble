@@ -28,7 +28,7 @@ window.onload = function () {
       height: 1640
     },
 
-    scene: [preloadGame, startGame, playGame, UI]
+    scene: [preloadGame, startGame, playGame, UI, endGame]
   }
   game = new Phaser.Game(gameConfig);
   window.focus();
@@ -283,7 +283,9 @@ class playGame extends Phaser.Scene {
     var badScore = this.scoreWordList(this.notWords)
     this.score -= badScore
     this.scoreText.setText(this.score)
-    this.updateScore()
+    if (this.scrabbleLetters.length > 0) {
+      this.updateScore()
+    }
     this.boardNumber++
     this.boardText.setText(this.boardNumber + 1)
     var timer = this.time.addEvent({
@@ -307,6 +309,17 @@ class playGame extends Phaser.Scene {
   }
   endGame() {
     this.showToast('Game Over')
+    var data = {
+      totalScore: this.totalScore,
+      score: this.score,
+      wordCount: this.foundWords.length,
+      notWordCount: this.notWords.length,
+      rackCount: this.rack.length,
+      boardNumber: this.boardNumber
+    }
+    this.scene.pause()
+    this.scene.launch('endGame', data)
+    /* 
     if (this.rack.length == 0) {
       this.scoreBuffer += 1000
       this.showToast('all tiles bonus')
@@ -319,7 +332,7 @@ class playGame extends Phaser.Scene {
       gameSettings.mostWordsFound = this.foundWords.length
     }
     gameSettings.lastScore = this.totalScore
-    this.saveSettins()
+    this.saveSettins() */
   }
   updateScore() {
     var bonus = this.foundWords.length - this.notWords.length
