@@ -28,7 +28,7 @@ window.onload = function () {
       height: 1640
     },
 
-    scene: [preloadGame, startGame, playGame, UI, endGame]
+    scene: [preloadGame, startGame, playGame, UI, endGame, wordsPlayed, help]
   }
   game = new Phaser.Game(gameConfig);
   window.focus();
@@ -171,8 +171,9 @@ class playGame extends Phaser.Scene {
       } else if (target.type == 'swap') {
         this.rack.splice(gameObject.slot, 1, null)
         var ind = this.tileLetters.indexOf(gameObject.letter)
-        var tempScore = this.tileLettersValues[ind]
-        this.score -= tempScore
+        var tempScore = this.tileLettersValues[ind] * (this.boardNumber + 1)
+        this.score -= tempScore;
+        this.showToast('-' + tempScore)
         this.scoreText.setText(this.score)
         this.emptySlots.push(gameObject.slot)
         this.getNewTiles()
@@ -196,18 +197,27 @@ class playGame extends Phaser.Scene {
     this.clearIcon.on('pointerdown', this.clear, this)
     this.boardText = this.add.bitmapText(75, 1550, 'gothic', '1', 60).setOrigin(.5).setTint(0xffffff).setAlpha(1);
 
-    var homeIcon = this.add.image(game.config.width / 2, 1550, 'menu').setScale(1.25).setInteractive();
-    homeIcon.on('pointerdown', function () {
-      this.scene.stop();
-      this.scene.start('startGame')
-    }, this)
-    /*  var buttonTest = this.add.image(850, 50, 'letters', 26).setInteractive()
-      buttonTest.on('pointerdown', function () {
-        this.scene.pause()
-        this.scene.launch('UI')
-      }, this) */
+    // var homeIcon = this.add.image(game.config.width / 2, 1550, 'menu').setScale(1.25).setInteractive();
+    /*  homeIcon.on('pointerdown', function () {
+       this.scene.stop();
+       this.scene.start('startGame')
+     }, this) */
+    /* var testData = {
+      totalScore: 1000,
+      score: 50,
+      wordCount: 37,
+      notWordCount: 3,
+      rackCount: 0,
+      boardNumber: 5
+    }
+    var buttonTest = this.add.image(850, 50, 'letters', 26).setInteractive()
+    buttonTest.on('pointerdown', function () {
+      this.scene.pause()
+      this.scene.launch('endGame', testData)
+    }, this) */
 
     this.scoreBuffer = 0;
+    this.makeMenu()
 
   }
   update() {
@@ -219,7 +229,26 @@ class playGame extends Phaser.Scene {
       this.scoreDone = true
     }
   }
+  toggleMenu() {
 
+    if (this.menuGroup.y == 0) {
+      var menuTween = this.tweens.add({
+        targets: this.menuGroup,
+        y: -270,
+        duration: 500,
+        ease: 'Bounce'
+      })
+
+    }
+    if (this.menuGroup.y == -270) {
+      var menuTween = this.tweens.add({
+        targets: this.menuGroup,
+        y: 0,
+        duration: 500,
+        ease: 'Bounce'
+      })
+    }
+  }
   playWord() {
     //this.showToast('testing')
     var tempScore = 0
@@ -243,6 +272,10 @@ class playGame extends Phaser.Scene {
           if (this.notWords.indexOf(wordsOnBoard[i]) < 0) {
             this.notWords.push(wordsOnBoard[i])
             tempNot.push(wordsOnBoard[i])
+            if (this.wordsbonus.length > 0) {
+              console.log(this.wordsbonus[i])
+            }
+            tempScore -= this.scrabbleScore(wordsOnBoard[i]) * this.wordsbonus[i]
           }
         }
 
@@ -295,8 +328,11 @@ class playGame extends Phaser.Scene {
           var rand = Phaser.Math.Between(0, starterWords.length - 1)
           this.firstWord(starterWords[rand])
           this.notWords = []
-          this.addDoubleBonus(3)
-          this.addTripleBonus(2)
+          var rand2 = Phaser.Math.Between(0, 3)
+          this.addDoubleBonus(rand2)
+          var rand3 = Phaser.Math.Between(0, 2)
+          this.addTripleBonus(rand3)
+          this.addBlocks(this.boardNumber)
         } else {
           this.endGame()
         }
@@ -309,12 +345,19 @@ class playGame extends Phaser.Scene {
   }
   endGame() {
     this.showToast('Game Over')
+    var rCount = 0
+    for (let index = 0; index < this.rack.length; index++) {
+      if (this.rack[index] != null) {
+        rCount++
+      }
+    }
+
     var data = {
       totalScore: this.totalScore,
       score: this.score,
       wordCount: this.foundWords.length,
       notWordCount: this.notWords.length,
-      rackCount: this.rack.length,
+      rackCount: rCount,
       boardNumber: this.boardNumber
     }
     this.scene.pause()
@@ -518,26 +561,51 @@ class playGame extends Phaser.Scene {
   }
   firstWord(word) {
     var first = word
-    var startR = Phaser.Math.Between(0, gameOptions.rows - 1);
-    var startC = Phaser.Math.Between(0, 2);
-    for (var i = 0; i < first.length; i++) {
-      var ind = this.tileLetters.indexOf(first[i])
-      var block = this.add.image(this.swap.x, this.swap.y, 'letters', ind).setInteractive()
-      block.displayWidth = this.blockSize;
-      block.displayHeight = this.blockSize
-      block.index = ind
-      block.letter = first[i]
-      this.board[startR][(startC + i)].letter = first[i]
-      this.playedLetters[startR][(startC + i)] = block
-      var tween = this.tweens.add({
-        targets: block,
-        x: (gameOptions.offsetX + this.blockSize / 2) + (startC + i) * this.blockSize,
-        y: gameOptions.offsetY + startR * this.blockSize,
-        duration: 400,
-        angle: 360,
-        delay: i * 50
-      })
+    if (Math.random() > .5) {
+      var startR = Phaser.Math.Between(0, gameOptions.rows - 1);
+      var startC = Phaser.Math.Between(0, 2);
+      for (var i = 0; i < first.length; i++) {
+        var ind = this.tileLetters.indexOf(first[i])
+        var block = this.add.image(this.swap.x, this.swap.y, 'letters', ind).setInteractive()
+        block.displayWidth = this.blockSize;
+        block.displayHeight = this.blockSize
+        block.index = ind
+        block.letter = first[i]
+        this.board[startR][(startC + i)].letter = first[i]
+        this.playedLetters[startR][(startC + i)] = block
+        var tween = this.tweens.add({
+          targets: block,
+          x: (gameOptions.offsetX + this.blockSize / 2) + (startC + i) * this.blockSize,
+          y: gameOptions.offsetY + startR * this.blockSize,
+          duration: 400,
+          angle: 360,
+          delay: i * 50
+        })
+      }
+    } else {
+      var startR = Phaser.Math.Between(0, 2);
+      var startC = Phaser.Math.Between(0, gameOptions.cols - 1);
+      for (var i = 0; i < first.length; i++) {
+        var ind = this.tileLetters.indexOf(first[i])
+        var block = this.add.image(this.swap.x, this.swap.y, 'letters', ind).setInteractive()
+        block.displayWidth = this.blockSize;
+        block.displayHeight = this.blockSize
+        block.index = ind
+        block.letter = first[i]
+        this.board[startR + i][startC].letter = first[i]
+        this.playedLetters[startR + i][startC] = block
+        var tween = this.tweens.add({
+          targets: block,
+          x: (gameOptions.offsetX + this.blockSize / 2) + startC * this.blockSize,
+          y: gameOptions.offsetY + (startR + i) * this.blockSize,
+          duration: 400,
+          angle: 360,
+          delay: i * 50
+        })
+      }
     }
+
+
     this.foundWords.push(word)
     this.removeFromPool(word)
   }
@@ -666,6 +734,41 @@ class playGame extends Phaser.Scene {
       this.scrabbleLetters[i] = this.scrabbleLetters[rnd];
       this.scrabbleLetters[rnd] = c;
     }
+  }
+  makeMenu() {
+    ////////menu
+    this.menuGroup = this.add.container().setDepth(3);
+    var menuButton = this.add.image(game.config.width / 2, game.config.height - 40, "menu").setInteractive().setDepth(3);
+    menuButton.on('pointerdown', this.toggleMenu, this)
+    menuButton.setOrigin(0.5);
+    this.menuGroup.add(menuButton);
+    var homeButton = this.add.bitmapText(game.config.width / 2, game.config.height + 50, 'gothic', 'HOME', 50).setOrigin(.5).setTint(0xffffff).setAlpha(1).setInteractive();
+    homeButton.on('pointerdown', function () {
+      this.scene.stop()
+      this.scene.start('startGame')
+    }, this)
+    this.menuGroup.add(homeButton);
+    var wordButton = this.add.bitmapText(game.config.width / 2, game.config.height + 140, 'gothic', 'WORDS', 50).setOrigin(.5).setTint(0xffffff).setAlpha(1).setInteractive();
+    wordButton.on('pointerdown', function () {
+      var data = {
+        yesWords: this.foundWords,
+        noWords: this.notWords
+      }
+      this.scene.pause()
+      this.scene.launch('wordsPlayed', data)
+    }, this)
+    this.menuGroup.add(wordButton);
+    var helpButton = this.add.bitmapText(game.config.width / 2, game.config.height + 230, 'gothic', 'HELP', 50).setOrigin(.5).setTint(0xffffff).setAlpha(1).setInteractive();
+    helpButton.on('pointerdown', function () {
+
+      this.scene.pause()
+      this.scene.launch('help')
+    }, this)
+    this.menuGroup.add(helpButton);
+    //var thankYou = game.add.button(game.config.width / 2, game.config.height + 130, "thankyou", function(){});
+    // thankYou.setOrigin(0.5);
+    // menuGroup.add(thankYou);    
+    ////////end menu
   }
   showToast(text) {
     if (this.toastBox) {
