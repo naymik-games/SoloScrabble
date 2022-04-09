@@ -691,7 +691,12 @@ class playGame extends Phaser.Scene {
     }
   }
   saveGame(){
-    
+    var saveBoard = this.board
+    for (var i = 0; i < gameOptions.rows; i++) {
+      for (var j = 0; j < gameOptions.cols; j++) {
+        saveBoard.image = null
+      }
+    }
   }
   loadGame(){
     for (var i = 0; i < gameOptions.rows; i++) {
