@@ -60,7 +60,7 @@ class UI extends Phaser.Scene {
     }
   }
   selectLetter(t) {
-    console.log(t.index + 'letter')
+    //console.log(t.index + 'letter')
     //this.Main.blankLetter = t.index;
     this.Main.setLetter(t.index)
     this.scene.stop();

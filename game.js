@@ -55,6 +55,8 @@ class playGame extends Phaser.Scene {
     this.tileLettersValues = [1, 3, 3, 2, 1, 4, 2, 4, 1, 8, 5, 1, 3, 1, 1, 3, 10, 1, 1, 1, 1, 4, 4, 8, 4, 10, 0];
     this.selected = []
     this.selectedDir = null;
+    this.titleText = this.add.bitmapText(75, 20, 'lato', 'SOLOSCRABBLE', 50).setOrigin(0).setTint(0xffffff).setAlpha(1);
+
     //this.colText = this.add.bitmapText(85, 1550, 'gothic', '0', 80).setOrigin(.5).setTint(0xcbf7ff).setAlpha(1);
     // this.rowText = this.add.bitmapText(185, 1550, 'gothic', '0', 80).setOrigin(.5).setTint(0xcbf7ff).setAlpha(1);
     this.scoreText = this.add.bitmapText(gameOptions.offsetX, gameOptions.offsetY - 100, 'gothic', '0', 80).setOrigin(0, 1).setTint(0xffffff).setAlpha(1);
@@ -68,7 +70,8 @@ class playGame extends Phaser.Scene {
 
     this.wordText = this.add.bitmapText(game.config.width / 2, 1375, 'gothic', '', 50).setOrigin(.5, 0).setTint(0xcffffff).setAlpha(1);
 
-
+    starterWords = starterWordsString.split(" ")
+    //console.log(starterWords)
     this.score = 0
     this.totalScore = 0
 
@@ -100,14 +103,16 @@ class playGame extends Phaser.Scene {
 
     this.scrabbleLetters = this.makeBag(scrabbleLettersDict)
     this.shuffle_pool()
-    console.log(this.scrabbleLetters)
-    //console.log(g_letpool)
+    ////console.log(this.scrabbleLetters)
+    ////console.log(g_letpool)
 
 
     this.createBoard()
 
     var rand = Phaser.Math.Between(0, starterWords.length - 1)
-    this.firstWord(starterWords[rand])
+    var tword = starterWords.splice(rand, 1)
+    //console.log(tword[0])
+    this.firstWord(tword[0])
 
     var timer = this.time.addEvent({
       delay: 1000, // ms
@@ -118,7 +123,7 @@ class playGame extends Phaser.Scene {
     });
 
 
-    //console.log(g_letpool)
+    ////console.log(g_letpool)
     this.myLetters = [];
     var comp_letters = [];
 
@@ -167,7 +172,7 @@ class playGame extends Phaser.Scene {
         this.clearIcon.setAlpha(.5)
         //gameObject.disableInteractive();
         //target.input.dropZone = false;
-        //console.log(this.board)
+        ////console.log(this.board)
       } else if (target.type == 'swap') {
         this.rack.splice(gameObject.slot, 1, null)
         var ind = this.tileLetters.indexOf(gameObject.letter)
@@ -255,7 +260,7 @@ class playGame extends Phaser.Scene {
     var wordsOnBoard = this.getWords()
     var tempFound = []
     var tempNot = []
-    console.log(wordsOnBoard)
+    //console.log(wordsOnBoard)
     if (wordsOnBoard.length > 0) {
       for (var i = 0; i < wordsOnBoard.length; i++) {
         if (ScrabbleWordList.indexOf(wordsOnBoard[i]) > -1) {
@@ -263,7 +268,7 @@ class playGame extends Phaser.Scene {
             this.foundWords.push(wordsOnBoard[i])
             tempFound.push(wordsOnBoard[i])
             if (this.wordsbonus.length > 0) {
-              console.log(this.wordsbonus[i])
+              //console.log(this.wordsbonus[i])
             }
             tempScore += this.scrabbleScore(wordsOnBoard[i]) * this.wordsbonus[i]
           }
@@ -273,17 +278,17 @@ class playGame extends Phaser.Scene {
             this.notWords.push(wordsOnBoard[i])
             tempNot.push(wordsOnBoard[i])
             if (this.wordsbonus.length > 0) {
-              console.log(this.wordsbonus[i])
+              //console.log(this.wordsbonus[i])
             }
             tempScore -= this.scrabbleScore(wordsOnBoard[i]) * this.wordsbonus[i]
           }
         }
 
       }
-      //console.log(this.foundWords)
-      //console.log(this.notWords)
-      console.log(tempFound)
-      console.log(tempNot)
+      ////console.log(this.foundWords)
+      ////console.log(this.notWords)
+      //console.log(tempFound)
+      //console.log(tempNot)
       if (tempFound.length == 1) {
         var word = 'word'
       } else {
@@ -326,11 +331,12 @@ class playGame extends Phaser.Scene {
       callback: function () {
         if (this.scrabbleLetters.length > 0) {
           var rand = Phaser.Math.Between(0, starterWords.length - 1)
-          this.firstWord(starterWords[rand])
+          var tword = starterWords.splice(rand, 1)
+          this.firstWord(tword[0])
           this.notWords = []
-          var rand2 = Phaser.Math.Between(0, 3)
+          var rand2 = Phaser.Math.Between(1, 3)
           this.addDoubleBonus(rand2)
-          var rand3 = Phaser.Math.Between(0, 2)
+          var rand3 = Phaser.Math.Between(1, 2)
           this.addTripleBonus(rand3)
           this.addBlocks(this.boardNumber)
         } else {
@@ -395,14 +401,14 @@ class playGame extends Phaser.Scene {
   launchLetterPad(col, row) {
     this.blankCoo = { col: col, row: row }
     //this.blankLetter = null
-    console.log(this.blankCoo)
+    //console.log(this.blankCoo)
     this.scene.pause()
     this.scene.launch('UI')
   }
   setLetter(ind) {
     this.playedLetters[this.blankCoo.row][this.blankCoo.col].setFrame(ind)
     this.board[this.blankCoo.row][this.blankCoo.col].letter = this.tileLetters[ind]
-    console.log(ind)
+    //console.log(ind)
   }
   getWords() {
     let words = []
@@ -513,9 +519,9 @@ class playGame extends Phaser.Scene {
     return tempScore
   }
   clearBoard() {
-    //console.log(this.playedLetters)
-    console.log(this.foundWords.length)
-    console.log(this.notWords.length)
+    ////console.log(this.playedLetters)
+    //console.log(this.foundWords.length)
+    //console.log(this.notWords.length)
     for (let row = 0; row < gameOptions.rows; row++) {
       for (let column = 0; column < gameOptions.cols; column++) {
         this.board[row][column].bonus = 1;
@@ -544,7 +550,7 @@ class playGame extends Phaser.Scene {
     }
   }
   disableBoard() {
-    //console.log(this.playedLetters)
+    ////console.log(this.playedLetters)
     for (let row = 0; row < gameOptions.rows; row++) {
       for (let column = 0; column < gameOptions.cols; column++) {
         if (this.playedLetters[row][column] != null) {
@@ -705,8 +711,8 @@ class playGame extends Phaser.Scene {
       this.board.push(boardT)
       this.playedLetters.push(played)
     }
-    //console.log(this.board)
-    //console.log(this.playedLetters)
+    ////console.log(this.board)
+    ////console.log(this.playedLetters)
     this.addDoubleBonus(1)
     this.addTripleBonus(1)
     //this.addBlocks(3)

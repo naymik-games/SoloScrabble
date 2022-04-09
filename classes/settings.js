@@ -13,9 +13,9 @@ let gameOptions = {
 
 }
 
-var starterWordsString = 'first twist quake solo house zebras board tile mouse catch witch famine news school simple water hunter'
+var starterWordsString = 'first twist dog falcon faster quake beach solo house lazy xenial lucid zebras board tile mouse catch witch auto famine cat jumbo table abroad news school guilty simple water hunter'
 var starterWords = []
-starterWords = starterWordsString.split(" ")
+
 let gameSettings;
 var defaultValues = {
   topScore: 0,

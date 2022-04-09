@@ -18,7 +18,7 @@ class endGame extends Phaser.Scene {
 	create() {
 		this.bestScore = false;
 		this.bestWord = false;
-		console.log(this.rackCount)
+		//console.log(this.rackCount)
 		//	this.cameras.main.setBackgroundColor(0xf7eac6);
 		this.totalScoreFinal = this.totalScore
 		this.tempRack = 0
@@ -43,7 +43,7 @@ class endGame extends Phaser.Scene {
 		this.saveSettins()
 		var timedEvent = this.time.addEvent({ delay: 3000, callback: this.populateEnd, callbackScope: this, loop: false });
 
-		var back = this.add.image(game.config.width / 2, game.config.height / 2, 'blank').setAlpha(.9);
+		var back = this.add.image(50, 120, 'blank').setAlpha(.9).setOrigin(0);
 		back.displayWidth = 800;
 		back.displayHeight = 1400;
 
@@ -92,7 +92,9 @@ class endGame extends Phaser.Scene {
 		this.totalErrorText = this.add.bitmapText(350, 875, 'gothic', 'Errors: ' + this.notWordCount, 50).setOrigin(0, .5).setTint(0x000000).setAlpha(1);
 		this.totalBoardText = this.add.bitmapText(350, 950, 'gothic', 'Boards: ' + this.boardNumber, 50).setOrigin(0, .5).setTint(0x000000).setAlpha(1);
 
-
+		var graphics = this.add.graphics();
+		graphics.lineStyle(10, 0x000000, 1)
+		graphics.strokeRect(back.x, back.y, back.displayWidth, back.displayHeight)
 
 	}
 	update() {
@@ -110,6 +112,8 @@ class endGame extends Phaser.Scene {
 
 		playButton.on('pointerdown', this.clickHandler, this);
 
+		var homeButton = this.add.image(game.config.width / 2, 1400, 'home_icon').setScale(1).setInteractive().setTint(0x000000)
+		homeButton.on('pointerdown', this.clickHandler2, this);
 
 
 	}
@@ -123,7 +127,12 @@ class endGame extends Phaser.Scene {
 		this.scene.start('playGame');
 		//this.scene.launch('UI');
 	}
-
+	clickHandler2() {
+		this.scene.stop('playGame')
+		this.scene.stop('endGame')
+		this.scene.start('startGame');
+		//this.scene.launch('UI');
+	}
 
 }
 

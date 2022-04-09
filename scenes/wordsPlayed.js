@@ -44,7 +44,10 @@ class wordsPlayed extends Phaser.Scene {
 
 		}
 		this.totalNoWordText.setText(tempNoWords)
-
+		var graphics = this.add.graphics();
+		graphics.lineStyle(10, 0x000000, 1)
+		graphics.strokeRect(back.x, back.y, back.displayWidth, back.displayHeight)
+		//	var rect = this.add.rectangle(back.x, back.y, back.displayWidth, back.displayHeight, 0x000000, 1);
 
 
 	}
