@@ -12,10 +12,21 @@ let gameOptions = {
 
 
 }
-
+let gameLoad = 'new'
 var starterWordsString = 'first twist dog falcon faster quake beach solo house lazy xenial lucid zebras board tile mouse catch witch auto famine cat jumbo table abroad news school guilty simple water hunter'
 var starterWords = []
-
+let save = {
+  score: null,
+  totalScore: null,
+  boardNum: null,
+  rack: [],
+  empty: [],
+  board: [],
+  played: [],
+  words: [],
+  notWords: [],
+  bag: []
+}
 let gameSettings;
 var defaultValues = {
   topScore: 0,

@@ -21,6 +21,11 @@ class startGame extends Phaser.Scene {
     //var startTime = this.add.bitmapText(game.config.width / 2, 275, 'gothic', 'Play', 80).setOrigin(.5).setTint(0x000000);
 
     playButton.on('pointerdown', this.clickHandler, this);
+    
+    var loadButton = this.add.image(game.config.width / 2, 525, 'play').setScale(2).setInteractive().setTint(0x000000)
+    loadButton.on('pointerdown', this.clickHandler2, this);
+    
+
     var bestScoreText = this.add.bitmapText(game.config.width / 2, 675, 'gothic', 'Best: ' + gameSettings.topScore, 60).setOrigin(.5).setTint(0x000000);
     var bestWordText = this.add.bitmapText(game.config.width / 2, 775, 'gothic', 'Words: ' + gameSettings.mostWordsFound, 60).setOrigin(.5).setTint(0x000000);
     var directionsLabelText = this.add.bitmapText(game.config.width / 2, 1195, 'gothic', 'How to play:', 50).setOrigin(.5).setTint(0x000000);
@@ -33,7 +38,12 @@ class startGame extends Phaser.Scene {
 
   }
   clickHandler() {
-
+    gameLoad = 'new'
+    this.scene.start('playGame');
+    //this.scene.launch('UI');
+  }
+  clickHandler2() {
+    gameLoad = 'old'
     this.scene.start('playGame');
     //this.scene.launch('UI');
   }

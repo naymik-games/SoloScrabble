@@ -72,18 +72,21 @@ class playGame extends Phaser.Scene {
 
     starterWords = starterWordsString.split(" ")
     //console.log(starterWords)
+    //main game variables
     this.score = 0
     this.totalScore = 0
-
     this.boardNumber = 0
-
-    this.blockSize = (game.config.width - gameOptions.offsetX * 2) / gameOptions.cols
-    this.cameras.main.setBackgroundColor(0x146944);
     this.board = []
     this.rack = []
     this.emptySlots = []
     this.foundWords = []
     this.notWords = []
+    this.playedLetters = []
+    //scrable letters
+
+    this.blockSize = (game.config.width - gameOptions.offsetX * 2) / gameOptions.cols
+    this.cameras.main.setBackgroundColor(0x146944);
+    
     this.scoreDone = true;
 
     this.bg = this.add.image(gameOptions.offsetX - 15, (gameOptions.offsetY - (this.blockSize / 2)) - 15, 'blank').setOrigin(0).setTint(0x000000)
@@ -687,8 +690,40 @@ class playGame extends Phaser.Scene {
       }
     }
   }
+  saveGame(){
+    
+  }
+  loadGame(){
+    for (var i = 0; i < gameOptions.rows; i++) {
+      for (var j = 0; j < gameOptions.cols; j++) {
+        var block = this.add.image((gameOptions.offsetX + this.blockSize / 2) + j * this.blockSize, gameOptions.offsetY + i * this.blockSize, 'letters', savedBoard[i][j].index).setInteractive({ dropZone: true })
+        block.displayWidth = this.blockSize;
+        block.displayHeight = this.blockSize;
+        savedBoard[i][j].image = block;
+        savedBoard[i][j].letter = savedBoard[i][j].letter
+        savedBoard[i][j].index = savedBoard[i][j].index
+        tile.bonus = savedBoard[i][j].bonus
+        block.row = i
+        block.col = j
+        block.type = 'board'
+        block.block = false;
+        // SET TINT
+        //boardT.push(tile)
+        //played.push(null)
+      }
+      //this.board.push(boardT)
+      //this.playedLetters.push(played)
+    }
+    
+    ////console.log(this.board)
+    ////console.log(this.playedLetters)
+   // this.addDoubleBonus(1)
+    //this.addTripleBonus(1)
+    //this.addBlocks(3)
+    //LOAD PLAYED TILES
+  }
   createBoard() {
-    this.playedLetters = []
+    
     for (var i = 0; i < gameOptions.rows; i++) {
       var boardT = []
       var played = []
