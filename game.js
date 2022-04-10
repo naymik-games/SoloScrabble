@@ -86,7 +86,7 @@ class playGame extends Phaser.Scene {
       this.shuffle_pool()
     } else {
       loadedGame = JSON.parse(localStorage.getItem('ssSave'));
-      console.log(loadedGame.board)
+      //console.log(loadedGame.board)
       this.score = loadedGame.score
       this.totalScore = loadedGame.totalScore
       this.boardNumber = loadedGame.boardNum
@@ -98,7 +98,7 @@ class playGame extends Phaser.Scene {
       this.playedLetters = []
       this.scrabbleLetters = loadedGame.bag
 
-      console.log(this.board)
+      //console.log(this.board)
 
     }
     this.scoreText = this.add.bitmapText(gameOptions.offsetX, gameOptions.offsetY - 100, 'gothic', this.score, 80).setOrigin(0, 1).setTint(0xffffff).setAlpha(1);
@@ -234,12 +234,12 @@ class playGame extends Phaser.Scene {
       rackCount: 0,
       boardNumber: 5
     }*/
-    var buttonTest = this.add.image(850, 50, 'letters', 26).setInteractive()
+    /*var buttonTest = this.add.image(850, 50, 'letters', 26).setInteractive()
     buttonTest.on('pointerdown', function () {
       //this.scene.pause()
       //this.scene.launch('endGame', testData)
       this.saveGame()
-    }, this)
+    }, this)*/
 
     this.scoreBuffer = 0;
     this.makeMenu()
@@ -309,8 +309,8 @@ class playGame extends Phaser.Scene {
       ////console.log(this.notWords)
       //console.log(tempFound)
       //console.log(tempNot)
-      console.log(this.board)
-      console.log(this.playedLetters)
+      //console.log(this.board)
+     // console.log(this.playedLetters)
       if (tempFound.length == 1) {
         var word = 'word'
       } else {
@@ -334,6 +334,8 @@ class playGame extends Phaser.Scene {
     this.getNewTiles()
     this.clearIcon.setInteractive();
     this.clearIcon.setAlpha(1)
+    
+    this.saveGame()
   }
   clear() {
     this.clearIcon.disableInteractive();
@@ -361,6 +363,7 @@ class playGame extends Phaser.Scene {
           var rand3 = Phaser.Math.Between(1, 2)
           this.addTripleBonus(rand3)
           this.addBlocks(this.boardNumber)
+          this.saveGame()
         } else {
           this.endGame()
         }
@@ -751,7 +754,7 @@ class playGame extends Phaser.Scene {
     } */
   }
   loadGame() {
-    console.log('loading---')
+    //console.log('loading---')
     for (var i = 0; i < gameOptions.rows; i++) {
       var boardT = []
       var played = []
@@ -775,6 +778,7 @@ class playGame extends Phaser.Scene {
     }
     this.loadRack()
     this.loadTiles()
+    localStorage.removeItem('ssSave')
     ////console.log(this.board)
     ////console.log(this.playedLetters)
     // this.addDoubleBonus(1)
@@ -886,6 +890,10 @@ class playGame extends Phaser.Scene {
   makeMenu() {
     ////////menu
     this.menuGroup = this.add.container().setDepth(3);
+    var menuBG = this.add.image(game.config.width / 2, game.config.height -85, 'blank').setOrigin(.5,0).setTint(0x000000).setAlpha(.8)
+    menuBG.displayWidth = 300;
+    menuBG.displayHeight = 600
+    this.menuGroup.add(menuBG)
     var menuButton = this.add.image(game.config.width / 2, game.config.height - 40, "menu").setInteractive().setDepth(3);
     menuButton.on('pointerdown', this.toggleMenu, this)
     menuButton.setOrigin(0.5);
