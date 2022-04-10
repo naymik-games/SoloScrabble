@@ -68,7 +68,7 @@ class playGame extends Phaser.Scene {
     var rackBack = this.add.image(gameOptions.offsetX - 15, 1240, 'blank').setOrigin(0).setTint(0x000000)
     rackBack.displayWidth = 7 * this.blockSize + 30
     rackBack.displayHeight = this.blockSize + 30
-
+    this.boardText = this.add.bitmapText(75, 1550, 'gothic', '1', 60).setOrigin(.5).setTint(0xffffff).setAlpha(1);
     starterWords = starterWordsString.split(" ")
     //console.log(starterWords)
     //main game variables
@@ -90,6 +90,7 @@ class playGame extends Phaser.Scene {
       this.score = loadedGame.score
       this.totalScore = loadedGame.totalScore
       this.boardNumber = loadedGame.boardNum
+      this.boardText.setText(this.boardNumber + 1)
       this.board = []
       this.rack = []
       this.emptySlots = []
@@ -219,7 +220,7 @@ class playGame extends Phaser.Scene {
 
     this.clearIcon = this.add.image(175, 1550, 'clear').setScale(1.25).setAlpha(.5)
     this.clearIcon.on('pointerdown', this.clear, this)
-    this.boardText = this.add.bitmapText(75, 1550, 'gothic', '1', 60).setOrigin(.5).setTint(0xffffff).setAlpha(1);
+
 
     // var homeIcon = this.add.image(game.config.width / 2, 1550, 'menu').setScale(1.25).setInteractive();
     /*  homeIcon.on('pointerdown', function () {
@@ -310,7 +311,7 @@ class playGame extends Phaser.Scene {
       //console.log(tempFound)
       //console.log(tempNot)
       //console.log(this.board)
-     // console.log(this.playedLetters)
+      // console.log(this.playedLetters)
       if (tempFound.length == 1) {
         var word = 'word'
       } else {
@@ -334,7 +335,7 @@ class playGame extends Phaser.Scene {
     this.getNewTiles()
     this.clearIcon.setInteractive();
     this.clearIcon.setAlpha(1)
-    
+
     this.saveGame()
   }
   clear() {
@@ -412,6 +413,9 @@ class playGame extends Phaser.Scene {
     var bonus = this.foundWords.length - this.notWords.length
     this.score *= bonus
     this.scoreText.setText(this.score)
+    this.tempTotal = this.totalScore
+    this.totalScoreText.setText(this.tempTotal)
+    this.totalScore += this.score
     this.scoreBuffer += this.score
     //this.totalScore += this.score;
     // this.totalScoreText.setText(this.totalScore);
@@ -420,8 +424,8 @@ class playGame extends Phaser.Scene {
     this.scoreText.setText(this.score)
   }
   incrementScore() {
-    this.totalScore += 1;
-    this.totalScoreText.setText(this.totalScore);
+    this.tempTotal += 1;
+    this.totalScoreText.setText(this.tempTotal);
   }
   launchLetterPad(col, row) {
     this.blankCoo = { col: col, row: row }
@@ -770,15 +774,26 @@ class playGame extends Phaser.Scene {
         block.col = j
         block.type = 'board'
         tile.block = loadedGame.board[i][j].block;
+        if (loadedGame.board[i][j].bonus == 2) {
+          tile.image.setTint(0x00ff00)
+        } else if (loadedGame.board[i][j].bonus == 3) {
+          tile.image.setTint(0xff0000)
+        }
+        if (tile.block) {
+          tile.block = true
+          tile.image.setTint(0x000000)
+          tile.image.input.dropZone = false;
+        }
         boardT.push(tile)
         played.push(null)
+
       }
       this.board.push(boardT)
       this.playedLetters.push(played)
     }
     this.loadRack()
     this.loadTiles()
-    localStorage.removeItem('ssSave')
+
     ////console.log(this.board)
     ////console.log(this.playedLetters)
     // this.addDoubleBonus(1)
@@ -890,7 +905,7 @@ class playGame extends Phaser.Scene {
   makeMenu() {
     ////////menu
     this.menuGroup = this.add.container().setDepth(3);
-    var menuBG = this.add.image(game.config.width / 2, game.config.height -85, 'blank').setOrigin(.5,0).setTint(0x000000).setAlpha(.8)
+    var menuBG = this.add.image(game.config.width / 2, game.config.height - 85, 'blank').setOrigin(.5, 0).setTint(0x000000).setAlpha(.8)
     menuBG.displayWidth = 300;
     menuBG.displayHeight = 600
     this.menuGroup.add(menuBG)
