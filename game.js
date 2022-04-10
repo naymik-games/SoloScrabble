@@ -59,36 +59,8 @@ class playGame extends Phaser.Scene {
 
     //this.colText = this.add.bitmapText(85, 1550, 'gothic', '0', 80).setOrigin(.5).setTint(0xcbf7ff).setAlpha(1);
     // this.rowText = this.add.bitmapText(185, 1550, 'gothic', '0', 80).setOrigin(.5).setTint(0xcbf7ff).setAlpha(1);
-    this.scoreText = this.add.bitmapText(gameOptions.offsetX, gameOptions.offsetY - 100, 'gothic', '0', 80).setOrigin(0, 1).setTint(0xffffff).setAlpha(1);
-    this.xText = this.add.bitmapText(gameOptions.offsetX + 195, gameOptions.offsetY - 100, 'gothic', 'x', 50).setOrigin(0, 1).setTint(0xD6DEFF).setAlpha(1);
-    this.bonusText = this.add.bitmapText(gameOptions.offsetX + 245, gameOptions.offsetY - 100, 'gothic', '0', 50).setOrigin(0, 1).setTint(0xcffffff).setAlpha(1);
-    var tsBack = this.add.image(game.config.width - 60, gameOptions.offsetY - 85, 'blank').setOrigin(1).setTint(0x000000)
-    tsBack.displayWidth = 250
-    tsBack.displayHeight = 110
-    this.totalScoreText = this.add.bitmapText(game.config.width - gameOptions.offsetX, gameOptions.offsetY - 100, 'gothic', '0', 80).setOrigin(1).setTint(0xffffff).setAlpha(1);
-    this.bestScoreText = this.add.bitmapText(game.config.width - gameOptions.offsetX, gameOptions.offsetY - 200, 'gothic', gameSettings.topScore, 50).setOrigin(1).setTint(0xD6DEFF).setAlpha(1);
-
-    this.wordText = this.add.bitmapText(game.config.width / 2, 1375, 'gothic', '', 50).setOrigin(.5, 0).setTint(0xcffffff).setAlpha(1);
-
-    starterWords = starterWordsString.split(" ")
-    //console.log(starterWords)
-    //main game variables
-    this.score = 0
-    this.totalScore = 0
-    this.boardNumber = 0
-    this.board = []
-    this.rack = []
-    this.emptySlots = []
-    this.foundWords = []
-    this.notWords = []
-    this.playedLetters = []
-    //scrable letters
-
     this.blockSize = (game.config.width - gameOptions.offsetX * 2) / gameOptions.cols
     this.cameras.main.setBackgroundColor(0x146944);
-    
-    this.scoreDone = true;
-
     this.bg = this.add.image(gameOptions.offsetX - 15, (gameOptions.offsetY - (this.blockSize / 2)) - 15, 'blank').setOrigin(0).setTint(0x000000)
     this.bg.displayWidth = (this.blockSize * gameOptions.cols) + 30
     this.bg.displayHeight = (this.blockSize * gameOptions.rows) + 30
@@ -97,6 +69,59 @@ class playGame extends Phaser.Scene {
     rackBack.displayWidth = 7 * this.blockSize + 30
     rackBack.displayHeight = this.blockSize + 30
 
+    starterWords = starterWordsString.split(" ")
+    //console.log(starterWords)
+    //main game variables
+    if (gameLoad == 'new') {
+      this.score = 0
+      this.totalScore = 0
+      this.boardNumber = 0
+      this.board = []
+      this.rack = []
+      this.emptySlots = []
+      this.foundWords = []
+      this.notWords = []
+      this.playedLetters = []
+      this.scrabbleLetters = this.makeBag(scrabbleLettersDict)
+      this.shuffle_pool()
+    } else {
+      loadedGame = JSON.parse(localStorage.getItem('ssSave'));
+      console.log(loadedGame.board)
+      this.score = loadedGame.score
+      this.totalScore = loadedGame.totalScore
+      this.boardNumber = loadedGame.boardNum
+      this.board = []
+      this.rack = []
+      this.emptySlots = []
+      this.foundWords = loadedGame.words
+      this.notWords = loadedGame.notWords
+      this.playedLetters = []
+      this.scrabbleLetters = loadedGame.bag
+
+      console.log(this.board)
+
+    }
+    this.scoreText = this.add.bitmapText(gameOptions.offsetX, gameOptions.offsetY - 100, 'gothic', this.score, 80).setOrigin(0, 1).setTint(0xffffff).setAlpha(1);
+    this.xText = this.add.bitmapText(gameOptions.offsetX + 195, gameOptions.offsetY - 100, 'gothic', 'x', 50).setOrigin(0, 1).setTint(0xD6DEFF).setAlpha(1);
+    this.bonusText = this.add.bitmapText(gameOptions.offsetX + 245, gameOptions.offsetY - 100, 'gothic', this.foundWords.length - this.notWords.length, 50).setOrigin(0, 1).setTint(0xcffffff).setAlpha(1);
+    var tsBack = this.add.image(game.config.width - 60, gameOptions.offsetY - 85, 'blank').setOrigin(1).setTint(0x000000)
+    tsBack.displayWidth = 250
+    tsBack.displayHeight = 110
+    this.totalScoreText = this.add.bitmapText(game.config.width - gameOptions.offsetX, gameOptions.offsetY - 100, 'gothic', this.totalScore, 80).setOrigin(1).setTint(0xffffff).setAlpha(1);
+    this.bestScoreText = this.add.bitmapText(game.config.width - gameOptions.offsetX, gameOptions.offsetY - 200, 'gothic', gameSettings.topScore, 50).setOrigin(1).setTint(0xD6DEFF).setAlpha(1);
+
+    this.wordText = this.add.bitmapText(game.config.width / 2, 1375, 'gothic', '', 50).setOrigin(.5, 0).setTint(0xcffffff).setAlpha(1);
+
+    //scrable letters
+
+
+
+    this.scoreDone = true;
+
+
+
+
+
     this.swapIcon = this.add.image(710, 1550, 'swap').setScale(1.25).setInteractive({ dropZone: true });
     this.swapIcon.type = 'swap'
     this.swap = this.add.image(825, 1550, 'letters', 26).setScale(1.25).setInteractive({ dropZone: true })
@@ -104,39 +129,30 @@ class playGame extends Phaser.Scene {
 
     this.tileText = this.add.bitmapText(825, 1550, 'gothic', '0', 40).setOrigin(.5).setTint(0x000000).setAlpha(1);
 
-    this.scrabbleLetters = this.makeBag(scrabbleLettersDict)
-    this.shuffle_pool()
-    ////console.log(this.scrabbleLetters)
-    ////console.log(g_letpool)
+    if (gameLoad == 'new') {
+      this.createBoard()
 
+      var rand = Phaser.Math.Between(0, starterWords.length - 1)
+      var tword = starterWords.splice(rand, 1)
+      this.firstWord(tword[0])
 
-    this.createBoard()
+      var timer = this.time.addEvent({
+        delay: 1000, // ms
+        callback: this.makeRack,
+        //args: [],
+        callbackScope: this,
+        loop: false
+      });
+    } else {
+      this.loadGame()
 
-    var rand = Phaser.Math.Between(0, starterWords.length - 1)
-    var tword = starterWords.splice(rand, 1)
-    //console.log(tword[0])
-    this.firstWord(tword[0])
+    }
 
-    var timer = this.time.addEvent({
-      delay: 1000, // ms
-      callback: this.makeRack,
-      //args: [],
-      callbackScope: this,
-      loop: false
-    });
-
-
-    ////console.log(g_letpool)
-    this.myLetters = [];
-    var comp_letters = [];
-
-    //this.myLetters = this.takeLetters(this.myLetters);
-    //comp_letters = this.takeLetters(comp_letters);
 
 
 
     this.input.on('drag', function (pointer, gameObject, dragX, dragY) {
-
+      this.wordText.setText('')
       gameObject.x = dragX;
       gameObject.y = dragY;
 
@@ -217,12 +233,13 @@ class playGame extends Phaser.Scene {
       notWordCount: 3,
       rackCount: 0,
       boardNumber: 5
-    }
+    }*/
     var buttonTest = this.add.image(850, 50, 'letters', 26).setInteractive()
     buttonTest.on('pointerdown', function () {
-      this.scene.pause()
-      this.scene.launch('endGame', testData)
-    }, this) */
+      //this.scene.pause()
+      //this.scene.launch('endGame', testData)
+      this.saveGame()
+    }, this)
 
     this.scoreBuffer = 0;
     this.makeMenu()
@@ -292,6 +309,8 @@ class playGame extends Phaser.Scene {
       ////console.log(this.notWords)
       //console.log(tempFound)
       //console.log(tempNot)
+      console.log(this.board)
+      console.log(this.playedLetters)
       if (tempFound.length == 1) {
         var word = 'word'
       } else {
@@ -690,45 +709,128 @@ class playGame extends Phaser.Scene {
       }
     }
   }
-  saveGame(){
-    var saveBoard = this.board
+  saveGame() {
+    var saveBoard = []
     for (var i = 0; i < gameOptions.rows; i++) {
+      var saveBoardT = []
       for (var j = 0; j < gameOptions.cols; j++) {
-        saveBoard.image = null
+        var tile = {
+          letter: this.board[i][j].letter,
+          bonus: this.board[i][j].bonus,
+          block: this.board[i][j].block
+        }
+        saveBoardT.push(tile)
       }
+      saveBoard.push(saveBoardT)
     }
+    var saveRack = []
+    for (let index = 0; index < this.rack.length; index++) {
+      const element = this.rack[index].letter;
+      saveRack.push(element)
+    }
+    save.board = saveBoard
+    save.score = this.score
+    save.totalScore = this.totalScore
+    save.boardNum = this.boardNumber
+    save.words = this.foundWords
+    save.notWords = this.notWords
+    save.bag = this.scrabbleLetters
+    save.rack = saveRack
+    localStorage.setItem('ssSave', JSON.stringify(save));
+    /* let save = {
+      score: null,
+      totalScore: null,
+      boardNum: null,
+      rack: [],
+     
+      board: [],
+     
+      words: [],
+      notWords: [],
+      bag: []
+    } */
   }
-  loadGame(){
+  loadGame() {
+    console.log('loading---')
     for (var i = 0; i < gameOptions.rows; i++) {
+      var boardT = []
+      var played = []
       for (var j = 0; j < gameOptions.cols; j++) {
-        var block = this.add.image((gameOptions.offsetX + this.blockSize / 2) + j * this.blockSize, gameOptions.offsetY + i * this.blockSize, 'letters', savedBoard[i][j].index).setInteractive({ dropZone: true })
+        var tile = {}
+        var block = this.add.image((gameOptions.offsetX + this.blockSize / 2) + j * this.blockSize, gameOptions.offsetY + i * this.blockSize, 'letters', 27).setInteractive({ dropZone: true })
         block.displayWidth = this.blockSize;
         block.displayHeight = this.blockSize;
-        savedBoard[i][j].image = block;
-        savedBoard[i][j].letter = savedBoard[i][j].letter
-        savedBoard[i][j].index = savedBoard[i][j].index
-        tile.bonus = savedBoard[i][j].bonus
+        tile.image = block;
+        tile.letter = loadedGame.board[i][j].letter;
+        tile.bonus = loadedGame.board[i][j].bonus
         block.row = i
         block.col = j
         block.type = 'board'
-        block.block = false;
-        // SET TINT
-        //boardT.push(tile)
-        //played.push(null)
+        tile.block = loadedGame.board[i][j].block;
+        boardT.push(tile)
+        played.push(null)
       }
-      //this.board.push(boardT)
-      //this.playedLetters.push(played)
+      this.board.push(boardT)
+      this.playedLetters.push(played)
     }
-    
+    this.loadRack()
+    this.loadTiles()
     ////console.log(this.board)
     ////console.log(this.playedLetters)
-   // this.addDoubleBonus(1)
+    // this.addDoubleBonus(1)
     //this.addTripleBonus(1)
     //this.addBlocks(3)
     //LOAD PLAYED TILES
   }
+  loadRack() {
+    for (var i = 0; i < 7; i++) {
+      var lett = loadedGame.rack[i]
+      var ind = this.tileLetters.indexOf(lett[0])
+      var block = this.add.image(-100, 1300, 'letters', ind).setInteractive()
+      block.displayWidth = this.blockSize;
+      block.displayHeight = this.blockSize;
+      block.index = ind
+      block.letter = lett[0]
+      block.slot = i
+      this.input.setDraggable(block);
+      this.rack.push(block)
+      var tween = this.tweens.add({
+        targets: block,
+        x: (gameOptions.offsetX + this.blockSize / 2) + i * this.blockSize,
+        duration: 400,
+        angle: 360,
+        delay: i * 50
+      })
+    }
+    this.tileText.setText(this.scrabbleLetters.length)
+  }
+  loadTiles() {
+    for (var i = 0; i < gameOptions.rows; i++) {
+      for (var j = 0; j < gameOptions.cols; j++) {
+        if (this.board[i][j].letter != null) {
+          var ind = this.tileLetters.indexOf(this.board[i][j].letter)
+          var block = this.add.image(this.swap.x, this.swap.y, 'letters', ind).setInteractive()
+          block.displayWidth = this.blockSize;
+          block.displayHeight = this.blockSize
+          block.index = ind
+          block.letter = this.board[i][j].letter
+          //this.board[startR][(startC + i)].letter = first[i]
+          this.playedLetters[i][j] = block
+          var tween = this.tweens.add({
+            targets: block,
+            x: (gameOptions.offsetX + this.blockSize / 2) + j * this.blockSize,
+            y: gameOptions.offsetY + i * this.blockSize,
+            duration: 400,
+            angle: 360,
+            delay: i * 50
+          })
+
+        }
+      }
+    }
+  }
   createBoard() {
-    
+
     for (var i = 0; i < gameOptions.rows; i++) {
       var boardT = []
       var played = []
@@ -739,12 +841,12 @@ class playGame extends Phaser.Scene {
         block.displayHeight = this.blockSize;
         tile.image = block;
         tile.letter = null;
-        tile.index = 26
+
         tile.bonus = 1
         block.row = i
         block.col = j
         block.type = 'board'
-        block.block = false;
+        tile.block = false;
         boardT.push(tile)
         played.push(null)
       }
