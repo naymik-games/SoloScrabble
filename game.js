@@ -227,20 +227,21 @@ class playGame extends Phaser.Scene {
        this.scene.stop();
        this.scene.start('startGame')
      }, this) */
-    /* var testData = {
+    var testData = {
       totalScore: 1000,
       score: 50,
       wordCount: 37,
       notWordCount: 3,
       rackCount: 0,
+      rackScore: 0,
       boardNumber: 5
-    }*/
-    /*var buttonTest = this.add.image(850, 50, 'letters', 26).setInteractive()
+    }
+    var buttonTest = this.add.image(850, 50, 'letters', 26).setInteractive()
     buttonTest.on('pointerdown', function () {
-      //this.scene.pause()
-      //this.scene.launch('endGame', testData)
-      this.saveGame()
-    }, this)*/
+      this.scene.pause()
+      this.scene.launch('endGame', testData)
+      //this.saveGame()
+    }, this)
 
     this.scoreBuffer = 0;
     this.makeMenu()
@@ -378,8 +379,10 @@ class playGame extends Phaser.Scene {
   endGame() {
     this.showToast('Game Over')
     var rCount = 0
+    var rScore = 0
     for (let index = 0; index < this.rack.length; index++) {
       if (this.rack[index] != null) {
+        rScore += this.tileLettersValues[this.rack[index].index]
         rCount++
       }
     }
@@ -390,6 +393,7 @@ class playGame extends Phaser.Scene {
       wordCount: this.foundWords.length,
       notWordCount: this.notWords.length,
       rackCount: rCount,
+      rackScore: rScore,
       boardNumber: this.boardNumber
     }
     this.scene.pause()
