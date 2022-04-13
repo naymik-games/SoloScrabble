@@ -1,0 +1,27 @@
+{
+  "name": "SoloScrabble",
+  "short_name": "SoloScrabble",
+  "description": "Word building alone",
+  "scope": "/SoloScrabble/",
+  "start_url": "/SoloScrabble/",
+  "background_color": "#000000",
+  "theme_color": "#0f4a73",
+  "display": "standalone",
+  "icons": [
+    {
+      "src": "img/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "img/icon-256.png",
+      "sizes": "256x256",
+      "type": "image/png"
+    },
+    {
+      "src": "img/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

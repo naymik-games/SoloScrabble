@@ -227,21 +227,21 @@ class playGame extends Phaser.Scene {
        this.scene.stop();
        this.scene.start('startGame')
      }, this) */
-    var testData = {
-      totalScore: 1000,
-      score: 50,
-      wordCount: 37,
-      notWordCount: 3,
-      rackCount: 0,
-      rackScore: 0,
-      boardNumber: 5
-    }
-    var buttonTest = this.add.image(850, 50, 'letters', 26).setInteractive()
-    buttonTest.on('pointerdown', function () {
-      this.scene.pause()
-      this.scene.launch('endGame', testData)
-      //this.saveGame()
-    }, this)
+    /*  var testData = {
+       totalScore: 1000,
+       score: 50,
+       wordCount: 37,
+       notWordCount: 3,
+       rackCount: 0,
+       rackScore: 0,
+       boardNumber: 5
+     }
+     var buttonTest = this.add.image(850, 50, 'letters', 26).setInteractive()
+     buttonTest.on('pointerdown', function () {
+       this.scene.pause()
+       this.scene.launch('endGame', testData)
+       //this.saveGame()
+     }, this) */
 
     this.scoreBuffer = 0;
     this.makeMenu()

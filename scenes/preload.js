@@ -81,10 +81,7 @@ class preloadGame extends Phaser.Scene {
       frameWidth: 96,
       frameHeight: 96
     });
-    this.load.spritesheet("gems", "assets/sprites/gems.png", {
-      frameWidth: 100,
-      frameHeight: 100
-    });
+
     this.load.spritesheet("letters", "assets/sprites/letter-1.png", {
       frameWidth: 80,
       frameHeight: 80
@@ -93,14 +90,7 @@ class preloadGame extends Phaser.Scene {
       frameWidth: 90,
       frameHeight: 90
     });
-    this.load.spritesheet("particle_color", "assets/particles.png", {
-      frameWidth: 6,
-      frameHeight: 6
-    });
-    this.load.spritesheet("rover", "assets/sprites/rover.png", {
-      frameWidth: 100,
-      frameHeight: 100
-    });
+
 
     this.load.image('blank', 'assets/sprites/blank.png');
     this.load.image('star', 'assets/sprites/plain_star.png');
